@@ -1,5 +1,5 @@
 // models/EstudianteDocente.js
-const { docenteConn } = require('../db/connections');
+
 const mongoose = require('mongoose');
 
 const estudianteDocenteSchema = new mongoose.Schema({
