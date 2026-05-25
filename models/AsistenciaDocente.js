@@ -8,4 +8,4 @@ const asistenciaDocenteSchema = new mongoose.Schema({
   estado: String
 }, { collection: 'Asistencias-Docentes' });
 
-module.exports = docenteConn.model('AsistenciaDocente', asistenciaDocenteSchema);
+module.exports = mongoose.model('AsistenciaDocente', asistenciaDocenteSchema);
