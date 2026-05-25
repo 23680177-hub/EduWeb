@@ -11,4 +11,4 @@ const criteriosSchema = new mongoose.Schema({
   }]
 }, { collection: 'Criterios-Evaluacion' });
 
-module.exports = docenteConn.model('CriteriosEvaluacion', criteriosSchema);
+module.exports = mongoose.model('CriteriosEvaluacion', criteriosSchema);
