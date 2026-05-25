@@ -12,4 +12,4 @@ const entregaSchema = new mongoose.Schema({
   estado: { type: String, enum: ['entregado', 'calificado', 'revisado'], default: 'entregado' }
 }, { collection: 'Entregas' });
 
-module.exports = docenteConn.model('Entrega', entregaSchema);
+module.exports = mongoose.model('Entrega', entregaSchema);
