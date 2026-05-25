@@ -1,4 +1,4 @@
-const { docenteConn } = require('../db/connections');
+
 const mongoose = require('mongoose');
 
 const criteriosSchema = new mongoose.Schema({
