@@ -9,4 +9,4 @@ const horarioDocenteSchema = new mongoose.Schema({
   grupoId: { type: mongoose.Schema.Types.ObjectId, ref: 'Grupo' }
 }, { collection: 'Horario-Docente' });
 
-module.exports = docenteConn.model('HorarioDocente', horarioDocenteSchema);
+module.exports = mongoose.model('HorarioDocente', horarioDocenteSchema);
