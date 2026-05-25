@@ -1,4 +1,3 @@
-const { adminConn } = require('../db/connections');
 
 const mongoose = require('mongoose');
 
