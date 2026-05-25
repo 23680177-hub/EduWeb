@@ -15,4 +15,4 @@ const estudianteDocenteSchema = new mongoose.Schema({
   fechaRegistro: { type: Date, default: Date.now }
 }, { collection: 'Estudiantes' });
 
-module.exports = docenteConn.model('EstudianteDocente', estudianteDocenteSchema);
+module.exports = mongoose.model('EstudianteDocente', estudianteDocenteSchema);
