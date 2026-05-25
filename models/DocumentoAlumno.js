@@ -1,4 +1,4 @@
-const { estudianteConn } = require('../db/connections');
+
 const mongoose = require('mongoose');
 
 const documentoAlumnoSchema = new mongoose.Schema({
