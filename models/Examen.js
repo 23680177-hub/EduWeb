@@ -14,4 +14,4 @@ const examenSchema = new mongoose.Schema({
   intentosPermitidos: { type: Number, default: 1 }
 }, { collection: 'Examenes' });
 
-module.exports = docenteConn.model('Examen', examenSchema);
+module.exports = mongoose.model('Examen', examenSchema);
