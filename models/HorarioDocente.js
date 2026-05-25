@@ -1,4 +1,4 @@
-const { docenteConn } = require('../db/connections');
+
 const mongoose = require('mongoose');
 
 const horarioDocenteSchema = new mongoose.Schema({
