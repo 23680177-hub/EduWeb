@@ -1,4 +1,3 @@
-const { docenteConn } = require('../db/connections');
 const mongoose = require('mongoose');
 
 const entregaSchema = new mongoose.Schema({
