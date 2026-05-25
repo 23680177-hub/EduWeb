@@ -14,4 +14,4 @@ const entregaSchema = new mongoose.Schema({
     collection: 'Entregas'   // ← nombre exacto
 });
 
-module.exports = mongoose.model('Entrega', entregaSchema);
+module.exports = mongoose.model('EntregaEstudiante', entregaSchema);
