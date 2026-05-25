@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduWeb | Sistema Escolar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { font-family: 'Inter', system-ui, sans-serif; }
+        body {
+            background-image: url('fondo.png');
+            background-size: cover;
+            background-attachment: fixed;
+            background-color: #0b1120;
+        }
+        .white-card-solid {
+            background: #ffffff !important;
+            color: #0f172a !important;
+            border-radius: 2rem;
+            padding: 2rem;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.35);
+        }
+        .input-field {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 1rem;
+            border: 1px solid #e2e8f0;
+            outline: none;
+            background: #ffffff;
+            color: #0f172a;
+        }
+        .input-field:focus {
+            border-color: #4f46e5;
+            ring: 2px solid #4f46e5;
+        }
+        .btn-primary {
+            background: #4f46e5;
+            color: white;
+            font-weight: bold;
+            padding: 0.75rem;
+            border-radius: 1rem;
+            transition: 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-primary:hover {
+            background: #4338ca;
+            transform: scale(0.98);
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .role-login-active {
+            background: #4f46e5 !important;
+            color: white !important;
+        }
+        .reg-tab-active {
+            background: white !important;
+            color: #1e293b !important;
+            border: 1px solid #e2e8f0;
+        }
+        .role-login-btn, .reg-role-btn {
+            transition: 0.2s;
+            cursor: pointer;
+        }
+        .dashboard { display: none; }
+        .dashboard.active-dashboard { display: block; }
+        .suggest-btn {
+            background: #e2e8f0;
+            padding: 0.5rem 1rem;
+            border-radius: 0.75rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: 0.5rem;
+        }
+        .tab-admin-btn {
+            transition: 0.2s;
+        }
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        .hidden { display: none; }
+        .reporte-filtro { background: #f8fafc; padding: 1rem; border-radius: 1rem; margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Encabezado -->
+    <div class="text-center mb-12">
+        <h1 class="text-5xl md:text-7xl font-black bg-gradient-to-r from-white via-indigo-200 to-white bg-clip-text text-transparent">EduWeb</h1>
+        <p class="text-indigo-200 text-lg mt-2">Sistema de Gestión Escolar</p>
+    </div>
+
+    <!-- Contenedor de autenticación (login/registro) -->
+    <div id="auth-container">
+        <div class="flex justify-center gap-4 mb-8">
+            <button id="show-login-btn" class="px-8 py-3 rounded-2xl font-bold bg-indigo-600 text-white shadow-lg">Iniciar Sesión</button>
+            <button id="show-register-btn" class="px-8 py-3 rounded-2xl font-bold bg-white/20 text-white backdrop-blur">Registrarse</button>
+        </div>
+
+        <!-- LOGIN -->
+        <div id="login-section" class="tab-content active max-w-md mx-auto white-card-solid">
+            <h2 class="text-3xl font-black text-center mb-6 text-slate-800">Acceso al sistema</h2>
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-1 text-slate-700">Rol</label>
+                    <div class="flex gap-2">
+                        <button type="button" data-role="administrador" class="role-login-btn flex-1 py-2 rounded-xl font-bold bg-slate-200 text-slate-800">Administrador</button>
+                        <button type="button" data-role="alumno" class="role-login-btn flex-1 py-2 rounded-xl font-bold bg-slate-200 text-slate-800">Alumno</button>
+                        <button type="button" data-role="docente" class="role-login-btn flex-1 py-2 rounded-xl font-bold bg-slate-200 text-slate-800">Docente</button>
+                    </div>
+                    <input type="hidden" id="login-rol" value="administrador">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1 text-slate-700">Usuario / Matrícula</label>
+                    <input type="text" id="login-identificador" class="input-field">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1 text-slate-700">Contraseña</label>
+                    <input type="password" id="login-password" class="input-field">
+                </div>
+                <button type="submit" class="btn-primary w-full">Ingresar</button>
+            </form>
+        </div>
+
+        <!-- REGISTRO -->
+        <div id="register-section" class="tab-content max-w-lg mx-auto white-card-solid">
+            <h2 class="text-3xl font-black text-center mb-6 text-slate-800">Crear cuenta</h2>
+            <div class="flex gap-2 mb-6">
+                <button type="button" data-reg-role="alumno" class="reg-role-btn flex-1 py-2 rounded-xl font-bold bg-white text-indigo-800 border border-slate-200">Estudiante</button>
+                <button type="button" data-reg-role="docente" class="reg-role-btn flex-1 py-2 rounded-xl font-bold bg-slate-200 text-slate-800">Docente</button>
+                <button type="button" data-reg-role="administrador" class="reg-role-btn flex-1 py-2 rounded-xl font-bold bg-slate-200 text-slate-800">Administrador</button>
+            </div>
+            <form id="register-form" class="space-y-4">
+                <div id="dynamic-reg-fields"></div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1 text-slate-700">Contraseña</label>
+                    <input type="password" id="reg-password" class="input-field">
+                </div>
+                <button type="submit" class="btn-primary w-full">Registrarse</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========== PANEL DE ADMINISTRADOR ========== -->
+    <div id="admin-dashboard" class="dashboard white-card-solid max-w-7xl mx-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-black text-slate-800">Panel de Administrador</h2>
+            <button id="logout-admin" class="bg-red-500 text-white px-4 py-2 rounded-xl">Cerrar sesión</button>
+        </div>
+        <p class="text-slate-600 mb-4">Bienvenido, <span id="admin-nombre"></span> (<span id="admin-id"></span>)</p>
+
+        <!-- Pestañas -->
+        <div class="flex flex-wrap gap-2 border-b border-slate-200 mb-6">
+            <button data-tab="principales" class="tab-admin-btn px-4 py-2 rounded-t-lg font-semibold bg-indigo-600 text-white">Funciones principales</button>
+            <button data-tab="alumnos" class="tab-admin-btn px-4 py-2 rounded-t-lg font-semibold bg-slate-200 text-slate-700">Funciones para alumno</button>
+            <button data-tab="pagos" class="tab-admin-btn px-4 py-2 rounded-t-lg font-semibold bg-slate-200 text-slate-700">Pagos</button>
+            <button data-tab="reportes" class="tab-admin-btn px-4 py-2 rounded-t-lg font-semibold bg-slate-200 text-slate-700">Reportes avanzados</button>
+            <button data-tab="docentes" class="tab-admin-btn px-4 py-2 rounded-t-lg font-semibold bg-slate-200 text-slate-700">Docentes</button>
+        </div>
+
+        <!-- Contenido de pestañas -->
+        <div id="tab-principales" class="tab-admin-content">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <div class="bg-indigo-50 p-4 rounded-xl text-center"><h3 class="text-2xl font-bold text-indigo-800" id="kpi-total-alumnos">0</h3><p class="text-slate-600">Total Alumnos</p></div>
+                <div class="bg-green-50 p-4 rounded-xl text-center"><h3 class="text-2xl font-bold text-green-800" id="kpi-total-docentes">0</h3><p class="text-slate-600">Total Docentes</p></div>
+                <div class="bg-yellow-50 p-4 rounded-xl text-center"><h3 class="text-2xl font-bold text-yellow-800" id="kpi-morosidad">0%</h3><p class="text-slate-600">Morosidad</p></div>
+                <div class="bg-red-50 p-4 rounded-xl text-center"><h3 class="text-2xl font-bold text-red-800" id="kpi-desercion">0%</h3><p class="text-slate-600">Deserción</p></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-slate-100 p-4 rounded-xl shadow"><h3 class="font-bold text-lg mb-2">📁 Importar usuarios</h3><input type="file" id="bulk-upload-file" accept=".csv" class="mb-2 text-sm"><select id="bulk-upload-rol" class="w-full p-2 border rounded mb-2"><option value="alumno">Alumnos</option><option value="docente">Docentes</option></select><button id="btn-bulk-upload" class="bg-indigo-600 text-white px-4 py-2 rounded-xl w-full">Subir</button></div>
+                <div class="bg-slate-100 p-4 rounded-xl shadow"><h3 class="font-bold text-lg mb-2">💰 Conceptos de pago</h3><div id="conceptos-lista" class="space-y-2 max-h-40 overflow-y-auto mb-2"></div><div class="flex gap-2"><input type="text" id="nuevo-concepto" placeholder="Nuevo concepto" class="flex-1 p-2 border rounded"><input type="number" id="nuevo-monto" placeholder="Monto" class="w-24 p-2 border rounded"><button id="btn-agregar-concepto" class="bg-green-600 text-white px-3 py-2 rounded">+</button></div><button id="btn-guardar-conceptos" class="mt-2 bg-blue-600 text-white px-4 py-2 rounded-xl w-full">Guardar</button></div>
+                <div class="bg-slate-100 p-4 rounded-xl shadow"><h3 class="font-bold text-lg mb-2">📊 Reportes morosidad</h3><button id="btn-reporte-morosidad" class="bg-orange-600 text-white px-4 py-2 rounded-xl w-full mb-2">Generar</button><h3 class="font-bold text-lg mb-2 mt-4">📄 Estado de cuenta</h3><div class="flex gap-2"><input type="text" id="estado-cuenta-matricula" placeholder="Matrícula" class="flex-1 p-2 border rounded"><button id="btn-estado-cuenta" class="bg-purple-600 text-white px-4 py-2 rounded">Consultar</button></div></div>
+                <div class="bg-slate-100 p-4 rounded-xl shadow"><h3 class="font-bold text-lg mb-2">📈 Reportes estadísticos</h3><select id="tipo-reporte" class="w-full p-2 border rounded mb-2"><option value="academico">Desempeño académico</option><option value="asistencia">Asistencia</option><option value="desercion">Deserción</option></select><button id="btn-generar-reporte" class="bg-teal-600 text-white px-4 py-2 rounded-xl w-full">Generar</button></div>
+                <div class="bg-slate-100 p-4 rounded-xl shadow"><h3 class="font-bold text-lg mb-2">📎 Exportar datos</h3><select id="exportar-tipo" class="w-full p-2 border rounded mb-2"><option value="alumnos">Alumnos</option><option value="docentes">Docentes</option><option value="pagos">Pagos</option><option value="asignaciones">Asignaciones</option></select><select id="exportar-formato" class="w-full p-2 border rounded mb-2"><option value="pdf">PDF</option><option value="excel">Excel (CSV)</option><option value="csv">CSV</option></select><button id="btn-exportar" class="bg-cyan-600 text-white px-4 py-2 rounded-xl w-full">Exportar</button></div>
+                <div class="bg-slate-100 p-4 rounded-xl shadow"><h3 class="font-bold text-lg mb-2">⚙️ Reportes personalizados</h3><textarea id="query-custom" placeholder="JSON" rows="2" class="w-full p-2 border rounded mb-2"></textarea><button id="btn-custom-report" class="bg-pink-600 text-white px-4 py-2 rounded-xl w-full">Ejecutar</button></div>
+            </div>
+        </div>
+
+        <div id="tab-alumnos" class="tab-admin-content hidden">
+            <!-- Dentro de <div id="tab-alumnos" class="tab-admin-content hidden"> -->
+<div class="mt-8 border-t pt-6">
+    <h3 class="text-xl font-bold text-slate-800 mb-4">📄 Subir boleta (PDF)</h3>
+    <div class="bg-slate-50 p-4 rounded-xl shadow-md">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div>
+                <label class="block text-sm font-semibold mb-1">Matrícula del alumno</label>
+                <input type="text" id="boleta-matricula" class="w-full p-2 border rounded" placeholder="Ej: 25252144">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold mb-1">Periodo académico</label>
+                <input type="text" id="boleta-periodo" class="w-full p-2 border rounded" placeholder="Ej: 2025-1">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold mb-1">Archivo PDF</label>
+                <input type="file" id="boleta-archivo" accept="application/pdf" class="w-full p-2 border rounded">
+            </div>
+        </div>
+        <button id="btn-subir-boleta" class="bg-indigo-600 text-white px-4 py-2 rounded-xl w-full md:w-auto">Subir boleta</button>
+        <div id="mensaje-boleta" class="mt-3 text-sm hidden"></div>
+    </div>
+
+    <!-- Listado de boletas subidas recientemente (opcional) -->
+    <div class="mt-6">
+        <h4 class="font-bold text-slate-700 mb-2"></h4>
+        <div id="lista-boletas-admin" class="space-y-2 text-sm"></div>
+    </div>
+</div>
+            <div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold text-slate-800 mb-4 text-center">Gestión de Estudiantes</h3><button id="btn-nuevo-estudiante" class="bg-green-600 text-white px-4 py-2 rounded-xl">+ Nuevo Estudiante</button></div>
+            <div class="overflow-x-auto mb-6">
+                <table class="min-w-full bg-white rounded-lg shadow">
+                    <thead class="bg-slate-100">
+                        <tr>
+                            <th class="p-2 text-center">Nombre</th>
+                            <th class="p-2 text-center">Matrícula</th>
+                            <th class="p-2 text-center">Carrera</th>
+                            <th class="p-2 text-center">Grupo</th>
+                            <th class="p-2 text-center">Estado</th>
+                            <th class="p-2 text-center">Estado de Pago</th>
+                            <th class="p-2 text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-estudiantes"></tbody>
+                </table>
+            </div>
+          <div class="mt-8">
+    <h3 class="text-xl font-bold text-slate-800 mb-4">Gestión de Grupos</h3>
+    <div class="flex justify-between items-center mb-4">
+        <button id="btn-nuevo-grupo" class="bg-green-600 text-white px-4 py-2 rounded-xl">+ Nuevo Grupo</button>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full bg-white rounded-lg shadow">
+            <thead class="bg-slate-100">
+                <tr>
+                    <th class="p-2 text-center">Nombre</th>
+                    <th class="p-2 text-center">Carrera</th>
+                    <th class="p-2 text-center">Facultad</th>
+                    <th class="p-2 text-center">Horario</th>
+                    <th class="p-2 text-center">Estado</th>
+                    <th class="p-2 text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="lista-grupos"></tbody>
+        </table>
+    </div>
+</div>
+            <div class="mt-8"><h3 class="text-xl font-bold text-slate-800 mb-4">📋 Validación de solicitudes de materias</h3><div class="bg-slate-100 p-4 rounded-xl shadow"><div class="flex gap-2 mb-4"><input type="text" id="filtro-solicitudes-admin" placeholder="Filtrar por matrícula" class="flex-1 p-2 border rounded"><button id="btn-filtrar-solicitudes-admin" class="bg-indigo-600 text-white px-4 py-2 rounded">Buscar</button></div><div id="lista-solicitudes-admin" class="max-h-96 overflow-y-auto space-y-3"></div></div></div>
+        </div>
+
+        <div id="tab-pagos" class="tab-admin-content hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-slate-100 p-4 rounded-xl shadow">
+                    <h3 class="font-bold text-lg mb-2">🔍 Buscar alumno</h3>
+                    <div class="flex gap-2 mb-4"><input type="text" id="pago-matricula" placeholder="Ingrese matrícula" class="flex-1 p-2 border rounded"><button id="btn-buscar-alumno" class="bg-indigo-600 text-white px-4 py-2 rounded">Buscar</button></div>
+                    <div id="info-alumno" class="bg-white p-3 rounded mb-4 hidden"><p><strong>Nombre:</strong> <span id="alumno-nombre-info"></span></p><p><strong>Carrera:</strong> <span id="alumno-carrera-info"></span></p><p><strong>Grupo:</strong> <span id="alumno-grupo-info"></span></p><p><strong>Estado:</strong> <span id="alumno-estado-info"></span></p></div>
+                    <div id="deudas-info" class="bg-red-50 p-3 rounded mb-4 hidden"><h4 class="font-bold text-red-700">⚠️ Pagos pendientes</h4><ul id="lista-deudas" class="list-disc pl-5 text-sm"></ul></div>
+                </div>
+                <div class="bg-slate-100 p-4 rounded-xl shadow">
+                    <h3 class="font-bold text-lg mb-2">💵 Registrar pago</h3>
+                    <input type="hidden" id="pago-alumno-id">
+                    <select id="pago-concepto" class="w-full p-2 border rounded mb-2"><option value="">Seleccionar concepto</option></select>
+                    <input type="number" id="pago-monto" placeholder="Monto" class="w-full p-2 border rounded mb-2">
+                    <input type="date" id="pago-fecha" class="w-full p-2 border rounded mb-2">
+                    <button id="btn-registrar-pago" class="bg-green-600 text-white px-4 py-2 rounded-xl w-full">Registrar pago</button>
+                </div>
+            </div>
+            <div class="mt-6 bg-slate-100 p-4 rounded-xl shadow"><h3 class="font-bold text-lg mb-2">📋 Historial de pagos del alumno</h3><div id="historial-pagos" class="max-h-60 overflow-y-auto space-y-1 text-sm"></div></div>
+        </div>
+
+        <!-- Gráficas de ingresos y morosidad -->
+        <div id="tab-reportes" class="tab-admin-content hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow p-4">
+                    <h3 class="text-lg font-bold text-slate-800 mb-2">📊 Ingresos mensuales</h3>
+                    <div class="h-64">
+                        <canvas id="chart-ingresos"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow p-4">
+                    <h3 class="text-lg font-bold text-slate-800 mb-2">📉 Morosidad por carrera</h3>
+                    <div class="h-64">
+                        <canvas id="chart-morosidad"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-slate-100 p-4 rounded-xl shadow mb-6">
+                <h3 class="font-bold text-lg mb-3">🔎 Filtros para reportes de alumnos</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                    <div><label class="block text-sm font-semibold">Matrícula</label><input type="text" id="reporte-matricula" class="w-full p-2 border rounded" placeholder="Ej: 12345678"></div>
+                    <div><label class="block text-sm font-semibold">Nombre</label><input type="text" id="reporte-nombre" class="w-full p-2 border rounded" placeholder="Nombre parcial"></div>
+                    <div><label class="block text-sm font-semibold">Grupo</label><select id="reporte-grupo" class="w-full p-2 border rounded"><option value="">Todos</option></select></div>
+                    <div><label class="block text-sm font-semibold">Carrera</label><select id="reporte-carrera" class="w-full p-2 border rounded"><option value="">Todas</option></select></div>
+                </div>
+                <div class="flex flex-wrap gap-3">
+                    <button id="btn-reporte-alumnos" class="bg-indigo-600 text-white px-4 py-2 rounded-xl">Generar listado de alumnos</button>
+                    <button id="btn-reporte-pagos-alumno" class="bg-green-600 text-white px-4 py-2 rounded-xl">Reporte de pagos por alumno</button>
+                    <button id="btn-exportar-reporte" class="bg-cyan-600 text-white px-4 py-2 rounded-xl">Exportar resultado (CSV)</button>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow overflow-hidden">
+                <div class="p-4 bg-slate-50 border-b"><h3 class="font-bold text-slate-700">Resultados</h3></div>
+                <div id="resultado-reporte-tabla" class="p-4 overflow-x-auto"><table class="min-w-full text-sm"><thead class="bg-gray-100"><tr><th class="p-2">Matrícula</th><th>Nombre</th><th>Carrera</th><th>Grupo</th><th>Estado</th><th>Acción</th></tr></thead><tbody id="tabla-resultados-body"><tr><td colspan="6" class="text-center p-4">Usa los filtros para generar un reporte</td></tr></tbody></table></div>
+            </div>
+        </div>
+
+        <div id="tab-docentes" class="tab-admin-content hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-slate-100 p-4 rounded-xl shadow">
+                    <h3 class="font-bold text-lg mb-2">📌 Asignar materia y grupo a docente</h3>
+                    <input type="text" id="asignar-docente" placeholder="Matrícula o nombre del docente" class="w-full p-2 border rounded mb-2">
+                    <div class="flex gap-2 items-center mb-2">
+                        <select id="asignar-materia" class="flex-1 p-2 border rounded"><option value="">-- Seleccionar materia --</option></select>
+                        <button type="button" id="btn-nueva-materia-asignar" class="bg-green-600 text-white px-3 py-2 rounded">+</button>
+                    </div>
+                    <div class="flex gap-2 items-center mb-2">
+                        <select id="asignar-grupo-docente" class="flex-1 p-2 border rounded"><option value="">-- Seleccionar grupo --</option></select>
+                        <button type="button" id="btn-nuevo-grupo-asignar" class="bg-green-600 text-white px-3 py-2 rounded">+</button>
+                    </div>
+                    <button id="btn-asignar-materia" class="bg-indigo-600 text-white px-4 py-2 rounded-xl w-full">Asignar</button>
+                </div>
+            </div>
+            <div class="mt-6 bg-slate-100 p-4 rounded-xl shadow"><h3 class="font-bold text-lg mb-2">📋 Asignaciones actuales</h3><div id="lista-asignaciones" class="max-h-60 overflow-y-auto text-sm"></div></div>
+        </div>
+    </div>
+
+    <!-- PANEL DE ALUMNO (simplificado) -->
+    <div id="alumno-dashboard" class="dashboard white-card-solid max-w-4xl mx-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-black text-slate-800">Panel de Estudiante</h2>
+            <button id="logout-alumno" class="bg-red-500 text-white px-4 py-2 rounded-xl">Cerrar sesión</button>
+        </div>
+        <p class="text-slate-600 mb-4">Bienvenido, <span id="alumno-nombre"></span> (Matrícula: <span id="alumno-matricula"></span>)</p>
+        <div id="alumno-limite-info" class="bg-indigo-100 text-indigo-800 p-2 rounded mb-4 text-sm font-semibold">Cargando límite...</div>
+        <div class="mt-8">
+            <h3 class="text-xl font-bold text-slate-800 mb-4">📚 Mis materias y solicitudes</h3>
+            <div class="flex gap-2 mb-4">
+                <button id="alumno-ver-materias" class="bg-indigo-600 text-white px-4 py-2 rounded">Materias disponibles</button>
+                <button id="alumno-ver-carga" class="bg-green-600 text-white px-4 py-2 rounded">Mi carga académica</button>
+            </div>
+            <div id="alumno-materias-container" class="bg-slate-50 p-4 rounded-xl"><p class="text-slate-500">Selecciona una opción</p></div>
+        </div>
+    </div>
+
+    <!-- PANEL DE DOCENTE (simplificado) -->
+    <div id="docente-dashboard" class="dashboard white-card-solid max-w-4xl mx-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-black text-slate-800">Panel de Docente</h2>
+            <button id="logout-docente" class="bg-red-500 text-white px-4 py-2 rounded-xl">Cerrar sesión</button>
+        </div>
+        <p class="text-slate-600 mb-4">Bienvenido, <span id="docente-nombre"></span> (Matrícula: <span id="docente-matricula"></span>)</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-slate-100 p-4 rounded-xl"><h3 class="font-bold">📚 Mis asignaturas</h3><p class="text-sm">Próximamente</p></div>
+            <div class="bg-slate-100 p-4 rounded-xl"><h3 class="font-bold">📝 Tareas</h3><p class="text-sm">Próximamente</p></div>
+        </div>
+    </div>
+</div>
+
+<!-- Modales -->
+<div id="modal-estudiante" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-2xl w-full max-w-md">
+        <h3 class="text-xl font-bold mb-4" id="modal-estudiante-title">Nuevo Estudiante</h3>
+        <input type="hidden" id="estudiante-id">
+        <input type="text" id="est-nombre" placeholder="Nombre completo" class="w-full p-2 border rounded mb-2">
+        <input type="text" id="est-matricula" placeholder="Matrícula" class="w-full p-2 border rounded mb-2">
+        <input type="email" id="est-email" placeholder="Correo" class="w-full p-2 border rounded mb-2">
+        <input type="text" id="est-username" placeholder="Nombre de usuario" class="w-full p-2 border rounded mb-2">
+        <input type="password" id="est-password" placeholder="Contraseña (solo para nuevo)" class="w-full p-2 border rounded mb-2">
+        <input type="text" id="est-carrera" placeholder="Carrera" class="w-full p-2 border rounded mb-2">
+        <input type="text" id="est-facultad" placeholder="Facultad" class="w-full p-2 border rounded mb-2">
+        <select id="est-grupo" class="w-full p-2 border rounded mb-2"></select>
+        <div class="flex justify-end gap-2"><button id="btn-cerrar-modal" class="bg-gray-300 px-4 py-2 rounded">Cancelar</button><button id="btn-guardar-estudiante" class="bg-blue-600 text-white px-4 py-2 rounded">Guardar</button></div>
+    </div>
+</div>
+<div id="modal-grupo" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-2xl w-full max-w-md">
+        <h3 class="text-xl font-bold mb-4">Nuevo Grupo</h3>
+        <input type="hidden" id="grupo-id">
+        <input type="text" id="grupo-nombre" placeholder="Nombre del grupo" class="w-full p-2 border rounded mb-2">
+        <input type="text" id="grupo-carrera" placeholder="Carrera" class="w-full p-2 border rounded mb-2">
+        <input type="text" id="grupo-facultad" placeholder="Facultad" class="w-full p-2 border rounded mb-2">
+        <textarea id="grupo-horario" placeholder="Horario (texto)" rows="2" class="w-full p-2 border rounded mb-2"></textarea>
+        <div class="flex justify-end gap-2"><button class="cerrar-modal-grupo bg-gray-300 px-4 py-2 rounded">Cancelar</button><button id="btn-guardar-grupo" class="bg-blue-600 text-white px-4 py-2 rounded">Guardar</button></div>
+    </div>
+</div>
+<div id="panel-detalle" class="hidden mt-6 bg-slate-50 p-4 rounded-xl">
+    <div class="flex justify-between items-center mb-2"><h4 class="font-bold">Detalles del estudiante: <span id="detalle-nombre"></span></h4><button id="cerrar-detalle" class="text-red-500">X</button></div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div><h5 class="font-semibold">Inscripciones / Traslados</h5><select id="tipo-movimiento" class="p-1 border rounded w-full"><option value="inscripcion">Inscripción</option><option value="reinscripcion">Reinscripción</option><option value="traslado">Traslado</option><option value="baja">Baja</option><option value="graduacion">Graduación</option></select><input type="text" id="periodo" placeholder="Periodo (ej. 2025-1)" class="p-1 border rounded w-full mt-1"><select id="grupo-movimiento" class="p-1 border rounded w-full mt-1"></select><button id="btn-registrar-movimiento" class="bg-indigo-600 text-white px-3 py-1 rounded mt-2">Registrar</button></div>
+        <div><h5 class="font-semibold">Documentos (Kardex, Credencial, Horario)</h5><select id="tipo-documento" class="p-1 border rounded w-full"><option value="kardex">Kardex</option><option value="credencial">Credencial</option><option value="horario">Horario personalizado</option><option value="otros">Otros</option></select><input type="file" id="archivo-documento" class="mt-1 w-full"><button id="btn-subir-documento" class="bg-green-600 text-white px-3 py-1 rounded mt-2">Subir documento</button></div>
+    </div>
+    <div class="mt-4"><h5 class="font-semibold">Documentos subidos</h5><ul id="lista-documentos" class="list-disc pl-5 text-sm"></ul></div>
+    <div class="bg-slate-100 p-4 rounded-xl shadow mb-4">
+    <h3 class="font-bold text-lg mb-2">📄 Subir boleta PDF</h3>
+    <div class="flex gap-2 items-end">
+        <div class="flex-1">
+            <label class="block text-sm">Matrícula del alumno</label>
+            <input type="text" id="boleta-matricula" class="w-full p-2 border rounded">
+        </div>
+        <div class="flex-1">
+            <label class="block text-sm">Periodo (ej. 2025-1)</label>
+            <input type="text" id="boleta-periodo" class="w-full p-2 border rounded">
+        </div>
+        <div class="flex-1">
+            <label class="block text-sm">Archivo PDF</label>
+            <input type="file" id="boleta-archivo" accept=".pdf" class="w-full p-2 border rounded">
+        </div>
+        <button id="btn-subir-boleta" class="bg-indigo-600 text-white px-4 py-2 rounded">Subir</button>
+    </div>
+</div>
+</div>
+
+<script>
+    // ========== CONFIGURACIÓN ==========
+    const API_AUTH = '/api/auth';
+const API_ADMIN = '/api/admin';
+    let currentRegRole = 'alumno';
+    let ingresosChart = null;
+    let morosidadChart = null;
+
+    // ========== FUNCIONES DE VALIDACIÓN Y REGISTRO ==========
+    function validarUsername(username) { return /^[A-Z]{4}\d{2}$/.test(username); }
+    function validarPassword(pass) { return pass.length > 0 && pass.length <= 8 && /\d/.test(pass) && /[!@#$%^&*(),.?":{}|<>]/.test(pass); }
+    function validarMatriculaNumerica(mat) { return /^\d+$/.test(mat); }
+    function validarCorreoEscuela(email) { return /^\d+@eduweb\.mx$/.test(email); }
+
+    function generarUsername(nombre) {
+        if(!nombre) return '';
+        const palabras = nombre.trim().split(/\s+/);
+        let iniciales = '';
+        for(let i=0;i<Math.min(palabras.length,4);i++) iniciales += palabras[i].charAt(0).toUpperCase();
+        while(iniciales.length<4) iniciales += 'X';
+        const numeros = Math.floor(Math.random()*90+10).toString();
+        return iniciales+numeros;
+    }
+
+    function generarMatriculaDocente() {
+        const nombreInput = document.getElementById('reg-nombre');
+        const matriculaInput = document.getElementById('reg-matricula');
+        if(!nombreInput || !matriculaInput) return;
+        const nombre = nombreInput.value.trim();
+        if(!nombre) {
+            matriculaInput.value = '';
+            return;
+        }
+        const matricula = Math.floor(Math.random() * 90000000 + 10000000).toString();
+        matriculaInput.value = matricula;
+    }
+
+    function generarMatriculaEstudiante() { return Math.floor(Math.random() * 90000000 + 10000000).toString(); }
+    function generarEmailEstudiante(matricula) { return `${matricula}@eduweb.mx`; }
+    function actualizarCamposEstudiante() {
+        const nombreInput = document.getElementById('reg-nombre');
+        const matriculaInput = document.getElementById('reg-matricula');
+        const emailInput = document.getElementById('reg-email');
+        const usernameInput = document.getElementById('reg-username');
+        if (!nombreInput) return;
+        if (nombreInput.value.trim()) {
+            if (!matriculaInput.value) {
+                const nuevaMatricula = generarMatriculaEstudiante();
+                matriculaInput.value = nuevaMatricula;
+                emailInput.value = generarEmailEstudiante(nuevaMatricula);
+            }
+            if (!usernameInput.value) usernameInput.value = generarUsername(nombreInput.value);
+        }
+    }
+
+    function actualizarSugerenciaUsername() {
+        const nombreInput = document.getElementById('reg-nombre');
+        const usernameInput = document.getElementById('reg-username');
+        if(nombreInput && usernameInput && nombreInput.value.trim()) usernameInput.value = generarUsername(nombreInput.value);
+    }
+
+    function renderRegisterFields() {
+        const container = document.getElementById('dynamic-reg-fields');
+        const baseHtml = `<div><label class="block text-sm font-semibold mb-1 text-slate-700">Nombre completo</label><input type="text" id="reg-nombre" class="input-field" oninput="actualizarSugerenciaUsername()"></div><div><label class="block text-sm font-semibold mb-1 text-slate-700">Nombre de usuario</label><div class="flex gap-2 items-center"><input type="text" id="reg-username" class="input-field flex-1" readonly style="background:#f1f5f9"><button type="button" id="suggest-username-btn" class="suggest-btn">Sugerir otro</button></div></div>`;
+        if(currentRegRole === 'alumno') {
+            container.innerHTML = `
+                <div><label class="block text-sm font-semibold mb-1 text-slate-700">Nombre completo</label><input type="text" id="reg-nombre" class="input-field" oninput="actualizarCamposEstudiante()"></div>
+                <div><label class="block text-sm font-semibold mb-1 text-slate-700">Nombre de usuario</label><div class="flex gap-2 items-center"><input type="text" id="reg-username" class="input-field flex-1" readonly style="background:#f1f5f9"><button type="button" id="suggest-username-btn" class="suggest-btn">Sugerir otro</button></div></div>
+                <div><label class="block text-sm font-semibold mb-1 text-slate-700">Matrícula (automática)</label><input type="text" id="reg-matricula" class="input-field" readonly style="background:#f1f5f9"></div>
+                <div><label class="block text-sm font-semibold mb-1 text-slate-700">Correo institucional</label><input type="email" id="reg-email" class="input-field" readonly style="background:#f1f5f9"></div>
+            `;
+            const nombreInput = document.getElementById('reg-nombre');
+            if (nombreInput && nombreInput.value) actualizarCamposEstudiante();
+        } else if(currentRegRole === 'docente') {
+            container.innerHTML = `
+                <div><label class="block text-sm font-semibold mb-1 text-slate-700">Nombre completo</label><input type="text" id="reg-nombre" class="input-field" oninput="actualizarSugerenciaUsername(); generarMatriculaDocente()"></div>
+                <div><label class="block text-sm font-semibold mb-1 text-slate-700">Nombre de usuario</label><div class="flex gap-2 items-center"><input type="text" id="reg-username" class="input-field flex-1" readonly style="background:#f1f5f9"><button type="button" id="suggest-username-btn" class="suggest-btn">Sugerir otro</button></div></div>
+                <div><label class="block text-sm font-semibold mb-1 text-slate-700">Matrícula docente (8 dígitos, automática)</label><input type="text" id="reg-matricula" class="input-field" readonly style="background:#f1f5f9"></div>
+            `;
+            const nombreInput = document.getElementById('reg-nombre');
+            if(nombreInput && nombreInput.value) generarMatriculaDocente();
+        } else {
+            container.innerHTML = baseHtml;
+        }
+        const suggestBtn = document.getElementById('suggest-username-btn');
+        if(suggestBtn) suggestBtn.onclick = () => {
+            const nombre = document.getElementById('reg-nombre')?.value.trim();
+            if(nombre) document.getElementById('reg-username').value = generarUsername(nombre);
+            else alert("Primero ingresa el nombre completo");
+        };
+        if(document.getElementById('reg-nombre')?.value) actualizarSugerenciaUsername();
+    }
+
+    async function handleRegister(e) {
+        e.preventDefault();
+        const nombre = document.getElementById('reg-nombre')?.value.trim();
+        const username = document.getElementById('reg-username')?.value.trim();
+        let password = document.getElementById('reg-password').value;
+        let matricula = null, email = null;
+        if(currentRegRole !== 'administrador') matricula = document.getElementById('reg-matricula')?.value.trim();
+        if(currentRegRole === 'alumno') email = document.getElementById('reg-email')?.value.trim();
+        if(!nombre || !username || !password) return alert("Completa todos los campos.");
+        if(!validarUsername(username)) return alert("Usuario: 4 mayúsculas + 2 números (ej: JMRB03)");
+        if(currentRegRole !== 'administrador' && !validarMatriculaNumerica(matricula)) return alert("Matrícula solo números.");
+        if(currentRegRole === 'alumno' && (!email || !validarCorreoEscuela(email))) return alert("Correo: numeros@eduweb.mx");
+        if(!validarPassword(password)) return alert("Contraseña: máx 8 caracteres, número y símbolo");
+        const payload = { rol: currentRegRole, nombre, username, matricula, email, password };
+        try {
+            const res = await fetch(`${API_AUTH}/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            const data = await res.json();
+            if(res.ok) {
+                alert("✅ Registro exitoso. Inicia sesión.");
+                document.getElementById('register-form').reset();
+                showLogin();
+            } else alert("❌ Error: " + (data.error || "No se pudo registrar"));
+        } catch(err) { alert("Error de conexión con el servidor."); }
+    }
+
+    async function handleLogin(e) {
+        e.preventDefault();
+        const rol = document.getElementById('login-rol').value;
+        const identificador = document.getElementById('login-identificador').value.trim();
+        const password = document.getElementById('login-password').value;
+        if(!identificador || !password) return alert("Ingresa identificador y contraseña");
+        try {
+            const res = await fetch(`${API_AUTH}/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ identificador, password, rol }) });
+            const data = await res.json();
+            if(res.ok) {
+                if(rol === 'docente') {
+                    sessionStorage.setItem('usuario', JSON.stringify(data));
+                    window.location.href = 'docente.html';
+                    return;
+                }
+                if(rol === 'alumno') {
+                    sessionStorage.setItem('usuario', JSON.stringify(data));
+                    window.location.href = 'estudiante.html';
+                    return;
+                }
+                // Administrador
+                document.getElementById('auth-container').style.display = 'none';
+                document.getElementById('admin-dashboard').classList.add('active-dashboard');
+                document.getElementById('admin-nombre').innerText = data.nombre;
+                document.getElementById('admin-id').innerText = data.identificador;
+                // Cargar datos iniciales
+                await cargarKPIs();
+                await cargarEstudiantes();
+                await cargarGrupos();
+                await cargarConceptos();
+                await cargarAlumnosSelect();
+                await cargarConceptosSelect();
+                await cargarPagos();
+                await cargarSelectsReportes();
+                await cargarGraficos();
+                initAdminTabs();
+                asignarEventosBotones();
+            } else alert("❌ " + (data.error || "Credenciales incorrectas"));
+        } catch(err) { alert("Error de conexión con el servidor."); }
+    }
+
+    // ========== FUNCIONES DE LOGOUT Y NAVEGACIÓN ==========
+    function logout() {
+        document.getElementById('auth-container').style.display = 'block';
+        document.querySelectorAll('.dashboard').forEach(d => d.classList.remove('active-dashboard'));
+        document.getElementById('login-form').reset();
+        document.getElementById('register-form').reset();
+        showLogin();
+    }
+    function showLogin() {
+        document.getElementById('login-section').classList.add('active');
+        document.getElementById('register-section').classList.remove('active');
+        document.getElementById('show-login-btn').classList.add('bg-indigo-600','text-white');
+        document.getElementById('show-login-btn').classList.remove('bg-white/20');
+        document.getElementById('show-register-btn').classList.add('bg-white/20');
+        document.getElementById('show-register-btn').classList.remove('bg-indigo-600','text-white');
+    }
+    function showRegister() {
+        document.getElementById('register-section').classList.add('active');
+        document.getElementById('login-section').classList.remove('active');
+        document.getElementById('show-register-btn').classList.add('bg-indigo-600','text-white');
+        document.getElementById('show-register-btn').classList.remove('bg-white/20');
+        document.getElementById('show-login-btn').classList.add('bg-white/20');
+        document.getElementById('show-login-btn').classList.remove('bg-indigo-600','text-white');
+        renderRegisterFields();
+    }
+
+    // ========== ADMIN: PESTAÑAS ==========
+    function initAdminTabs() {
+        const tabs = document.querySelectorAll('.tab-admin-btn');
+        const contents = document.querySelectorAll('.tab-admin-content');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const target = tab.getAttribute('data-tab');
+                contents.forEach(content => content.classList.add('hidden'));
+                document.getElementById(`tab-${target}`).classList.remove('hidden');
+                tabs.forEach(t => t.classList.remove('bg-indigo-600', 'text-white'));
+                tab.classList.add('bg-indigo-600', 'text-white');
+                if (target === 'alumnos') {
+                    if (typeof cargarEstudiantes === 'function') cargarEstudiantes();
+                    if (typeof cargarGrupos === 'function') cargarGrupos();
+                    if (typeof cargarSolicitudesAdmin === 'function') cargarSolicitudesAdmin();
+                }
+                if (target === 'pagos') {
+                    if (typeof cargarPagos === 'function') cargarPagos();
+                    if (typeof cargarConceptosSelect === 'function') cargarConceptosSelect();
+                }
+                if (target === 'reportes') {
+                    if (typeof cargarGraficos === 'function') cargarGraficos();
+                    if (typeof cargarSelectsReportes === 'function') cargarSelectsReportes();
+                }
+                if (target === 'docentes') {
+                    if (typeof cargarMateriasEnSelects === 'function') cargarMateriasEnSelects();
+                    if (typeof cargarGruposEnSelects === 'function') cargarGruposEnSelects();
+                    if (typeof cargarAsignaciones === 'function') cargarAsignaciones();
+                }
+            });
+        });
+        document.querySelector('[data-tab="principales"]')?.click();
+    }
+
+    // ========== ASIGNAR EVENTOS A BOTONES MODALES ==========
+    function asignarEventosBotones() {
+        // Botón Nuevo Estudiante
+        const btnNuevoEst = document.getElementById('btn-nuevo-estudiante');
+        if (btnNuevoEst && !btnNuevoEst._listener) {
+            btnNuevoEst._listener = true;
+            btnNuevoEst.onclick = () => {
+                document.getElementById('modal-estudiante-title').innerText = 'Nuevo Estudiante';
+                document.getElementById('estudiante-id').value = '';
+                document.getElementById('est-nombre').value = '';
+                document.getElementById('est-matricula').value = '';
+                document.getElementById('est-email').value = '';
+                document.getElementById('est-username').value = '';
+                document.getElementById('est-password').value = '';
+                document.getElementById('est-carrera').value = '';
+                document.getElementById('est-facultad').value = '';
+                cargarGruposSelect('est-grupo', '').then(() => {
+                    document.getElementById('modal-estudiante').classList.remove('hidden');
+                });
+            };
+        }
+        // Botón guardar estudiante
+        const btnGuardar = document.getElementById('btn-guardar-estudiante');
+        if (btnGuardar && !btnGuardar._listener) {
+            btnGuardar._listener = true;
+            btnGuardar.onclick = async () => {
+                const id = document.getElementById('estudiante-id').value;
+                const nombre = document.getElementById('est-nombre').value;
+                const matricula = document.getElementById('est-matricula').value;
+                const email = document.getElementById('est-email').value;
+                const username = document.getElementById('est-username').value;
+                const password = document.getElementById('est-password').value;
+                const carrera = document.getElementById('est-carrera').value;
+                const facultad = document.getElementById('est-facultad').value;
+                const grupoId = document.getElementById('est-grupo').value; // puede ser "" (sin grupo)
+                const payload = { nombre, matricula, email, username, carrera, facultad, grupoActual: grupoId || null };
+                if (!id && !password) return alert('Contraseña requerida para nuevo estudiante');
+                if (!id) payload.password = password;
+                const method = id ? 'PUT' : 'POST';
+                const url = id ? `${API_ADMIN}/alumnos/${id}` : `${API_ADMIN}/alumnos`;
+                console.log('Enviando payload:', payload); // Depuración
+                try {
+                    const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (res.ok) {
+                        alert(id ? 'Estudiante actualizado correctamente' : 'Estudiante creado correctamente');
+                        document.getElementById('modal-estudiante').classList.add('hidden');
+                        await cargarEstudiantes(); // Refrescar tabla
+                    } else {
+                        const err = await res.json();
+                        alert('Error al guardar: ' + (err.error || 'Verifique los datos'));
+                    }
+                } catch (err) { alert('Error de conexión'); }
+            };
+        }
+        // Botón cerrar modal estudiante
+        const btnCerrar = document.getElementById('btn-cerrar-modal');
+        if (btnCerrar && !btnCerrar._listener) {
+            btnCerrar._listener = true;
+            btnCerrar.onclick = () => document.getElementById('modal-estudiante').classList.add('hidden');
+        }
+        // Cerrar modal grupo
+        document.querySelectorAll('.cerrar-modal-grupo').forEach(btn => {
+            if (!btn._listener) {
+                btn._listener = true;
+                btn.onclick = () => document.getElementById('modal-grupo').classList.add('hidden');
+            }
+        });
+    }
+
+    // ========== FUNCIONES DE CARGA DE DATOS ==========
+    async function cargarEstudiantes() {
+    try {
+        const res = await fetch(`${API_ADMIN}/alumnos`);
+        const data = await res.json();
+        const tbody = document.getElementById('lista-estudiantes');
+        if (tbody) {
+            tbody.innerHTML = '';
+            data.forEach(est => {
+                const grupoNombre = est.grupoActual?.nombre || '-';
+                tbody.innerHTML += `
+                    <tr class="border-b">
+                        <td class="p-2 text-center">${escapeHtml(est.nombre || '')}</td>
+                        <td class="p-2 text-center">${escapeHtml(est.matricula || '')}</td>
+                        <td class="p-2 text-center">${escapeHtml(est.carrera || '-')}</td>
+                        <td class="p-2 text-center">${escapeHtml(grupoNombre)}</td>
+                        <td class="p-2 text-center">${escapeHtml(est.estado || 'activo')}</td>
+                        <td class="p-2 text-center">
+                            <select id="pago-${est._id}" class="border rounded p-1 text-sm">
+                                <option value="Pagado" ${est.estadoPago === 'Pagado' ? 'selected' : ''}>Pagado</option>
+                                <option value="Pendiente" ${est.estadoPago === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
+                            </select>
+                            <button class="btn-actualizar-pago bg-blue-500 text-white px-2 py-1 rounded text-xs ml-1" data-id="${est._id}">Guardar</button>
+                        </td>
+                        <td class="p-2 text-center">
+                            <button class="text-blue-600" onclick="editarEstudiante('${est._id}')">✏️</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            // Eventos para actualizar estado de pago
+            document.querySelectorAll('.btn-actualizar-pago').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const alumnoId = btn.dataset.id;
+                    const select = document.getElementById(`pago-${alumnoId}`);
+                    const nuevoEstado = select.value;
+                    await actualizarEstadoPago(alumnoId, nuevoEstado);
+                });
+            });
+        }
+    } catch(e) { console.error(e); }
+}
+
+    async function cargarGrupos() {
+    try {
+        const res = await fetch(`${API_ADMIN}/grupos`);
+        const grupos = await res.json();
+        const tbody = document.getElementById('lista-grupos');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        grupos.forEach(g => {
+            const row = document.createElement('tr');
+            row.className = 'border-b';
+            row.innerHTML = `
+                <td class="p-2 text-center">${escapeHtml(g.nombre)}</td>
+                <td class="p-2 text-center">${escapeHtml(g.carrera)}</td>
+                <td class="p-2 text-center">${escapeHtml(g.facultad)}</td>
+                <td class="p-2 text-center">
+                    ${g.horarioUrl ? `<a href="${g.horarioUrl}" target="_blank" class="text-blue-600 underline">Ver horario</a>` : 'No subido'}
+                    <button class="btn-subir-horario bg-indigo-600 text-white px-2 py-1 rounded text-xs ml-1" data-id="${g._id}">Subir</button>
+                </td>
+                <td class="p-2 text-center">
+                    <select class="estado-grupo-select border rounded p-1 text-sm" data-id="${g._id}">
+                        <option value="activo" ${g.activo ? 'selected' : ''}>Activo</option>
+                        <option value="inactivo" ${!g.activo ? 'selected' : ''}>Inactivo</option>
+                    </select>
+                </td>
+                <td class="p-2 text-center">
+                    <button class="btn-editar-grupo text-blue-600" data-id="${g._id}">✏️</button>
+                    <button class="btn-eliminar-grupo text-red-600" data-id="${g._id}">🗑️</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        // Eventos
+        document.querySelectorAll('.btn-subir-horario').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const grupoId = btn.dataset.id;
+                subirHorarioGrupo(grupoId);
+            });
+        });
+        document.querySelectorAll('.estado-grupo-select').forEach(select => {
+            select.addEventListener('change', async (e) => {
+                const grupoId = select.dataset.id;
+                const nuevoEstado = select.value;
+                await actualizarEstadoGrupo(grupoId, nuevoEstado);
+                cargarGrupos();
+            });
+        });
+        document.querySelectorAll('.btn-editar-grupo').forEach(btn => {
+            btn.addEventListener('click', () => editarGrupo(btn.dataset.id));
+        });
+        document.querySelectorAll('.btn-eliminar-grupo').forEach(btn => {
+            btn.addEventListener('click', () => eliminarGrupo(btn.dataset.id));
+        });
+    } catch(e) { console.error(e); }
+}
+async function subirHorarioGrupo(grupoId) {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*,application/pdf';
+    input.onchange = async () => {
+        const file = input.files[0];
+        if (!file) return;
+        const formData = new FormData();
+        formData.append('horario', file);
+        try {
+            const res = await fetch(`${API_ADMIN}/grupos/${grupoId}/horario`, {
+                method: 'POST',
+                body: formData
+            });
+            if (res.ok) {
+                alert('Horario subido correctamente');
+                cargarGrupos();
+            } else {
+                alert('Error al subir horario');
+            }
+        } catch(err) { alert('Error de conexión'); }
+    };
+    input.click();
+}
+// Función para cargar las últimas boletas subidas (opcional)
+async function cargarUltimasBoletas() {
+    try {
+        const res = await fetch(`${API_ADMIN}/boletas/ultimas`); // Podemos crear esta ruta opcional
+        if (res.ok) {
+            const boletas = await res.json();
+            const container = document.getElementById('lista-boletas-admin');
+            if (container) {
+                container.innerHTML = '';
+                boletas.forEach(b => {
+                    const div = document.createElement('div');
+                    div.className = 'bg-white p-2 rounded flex justify-between items-center';
+                    div.innerHTML = `
+                        <div><strong>${b.alumnoMatricula}</strong> - ${b.periodo}</div>
+                        <div><a href="${b.urlArchivo}" target="_blank" class="text-blue-600 text-sm">Ver PDF</a></div>
+                    `;
+                    container.appendChild(div);
+                });
+            }
+        }
+    } catch (err) {
+        console.error('Error cargando boletas:', err);
+    }
+}
+
+// Evento para subir boleta
+document.getElementById('btn-subir-boleta')?.addEventListener('click', async () => {
+    const matricula = document.getElementById('boleta-matricula').value.trim();
+    const periodo = document.getElementById('boleta-periodo').value.trim();
+    const archivo = document.getElementById('boleta-archivo').files[0];
+    const mensajeDiv = document.getElementById('mensaje-boleta');
+
+    if (!matricula || !periodo || !archivo) {
+        if (mensajeDiv) {
+            mensajeDiv.textContent = '⚠️ Complete todos los campos y seleccione un archivo PDF.';
+            mensajeDiv.classList.remove('hidden');
+            setTimeout(() => mensajeDiv.classList.add('hidden'), 3000);
+        }
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('alumnoMatricula', matricula);
+    formData.append('periodo', periodo);
+    formData.append('archivo', archivo);
+
+    try {
+        const res = await fetch(`${API_ADMIN}/boletas/subir`, { method: 'POST', body: formData });
+        const data = await res.json();
+        if (res.ok) {
+            alert('✅ Boleta subida correctamente');
+            // Limpiar formulario
+            document.getElementById('boleta-matricula').value = '';
+            document.getElementById('boleta-periodo').value = '';
+            document.getElementById('boleta-archivo').value = '';
+            // Recargar listado de boletas si se desea
+            if (typeof cargarUltimasBoletas === 'function') cargarUltimasBoletas();
+        } else {
+            alert('❌ Error: ' + (data.error || 'No se pudo subir la boleta'));
+        }
+    } catch (err) {
+        alert('Error de conexión');
+    }
+});
+async function actualizarEstadoGrupo(grupoId, estado) {
+    try {
+        await fetch(`${API_ADMIN}/grupos/${grupoId}/estado`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ estado })
+        });
+    } catch(err) { console.error(err); }
+}
+
+    async function cargarSolicitudesAdmin(filtro = '') {
+        try {
+            let url = `${API_ADMIN}/solicitudes?estado=pendiente`;
+            if(filtro) url += `&matricula=${filtro}`;
+            const res = await fetch(url);
+            const solicitudes = await res.json();
+            const container = document.getElementById('lista-solicitudes-admin');
+            if (container) {
+                container.innerHTML = '';
+                if (solicitudes.length === 0) container.innerHTML = '<p class="text-slate-500">No hay solicitudes pendientes.</p>';
+                else {
+                    solicitudes.forEach(s => {
+                        container.innerHTML += `<div class="bg-white p-3 rounded shadow mb-2"><strong>${s.alumnoNombre}</strong> (${s.alumnoMatricula}) solicita <strong>${s.materiaNombre}</strong><div class="mt-2"><button class="btn-aprobar-solicitud bg-green-600 text-white px-2 py-1 rounded" data-id="${s._id}">Aprobar</button> <button class="btn-rechazar-solicitud bg-red-600 text-white px-2 py-1 rounded" data-id="${s._id}">Rechazar</button></div></div>`;
+                    });
+                    document.querySelectorAll('.btn-aprobar-solicitud').forEach(btn => btn.addEventListener('click', async () => {
+                        await fetch(`${API_ADMIN}/solicitudes/${btn.dataset.id}/aprobar`, { method: 'PUT' });
+                        cargarSolicitudesAdmin();
+                        cargarEstudiantes();
+                    }));
+                    document.querySelectorAll('.btn-rechazar-solicitud').forEach(btn => btn.addEventListener('click', async () => {
+                        await fetch(`${API_ADMIN}/solicitudes/${btn.dataset.id}/rechazar`, { method: 'PUT' });
+                        cargarSolicitudesAdmin();
+                    }));
+                }
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    async function cargarAlumnosSelect() {
+        try {
+            const res = await fetch(`${API_ADMIN}/alumnos`);
+            const alumnos = await res.json();
+            const select = document.getElementById('pago-alumno');
+            if (select) select.innerHTML = '<option value="">Seleccionar alumno</option>' + alumnos.map(a => `<option value="${a.matricula}">${a.nombre} (${a.matricula})</option>`).join('');
+        } catch(e) { console.error(e); }
+    }
+
+    async function cargarConceptosSelect() {
+        try {
+            const res = await fetch(`${API_ADMIN}/conceptos`);
+            const conceptos = await res.json();
+            const select = document.getElementById('pago-concepto');
+            if (select) {
+                select.innerHTML = '<option value="">Seleccionar concepto</option>';
+                conceptos.forEach(c => select.innerHTML += `<option value="${c.nombre}" data-monto="${c.monto}">${c.nombre} - $${c.monto}</option>`);
+            }
+        } catch (err) { console.error("Error cargando conceptos:", err); }
+    }
+
+    async function cargarPagos() {
+        try {
+            const res = await fetch(`${API_ADMIN}/pagos`);
+            const pagos = await res.json();
+            const container = document.getElementById('lista-pagos');
+            if (container) container.innerHTML = pagos.map(p => `<div class="bg-white p-2 rounded shadow-sm">${p.alumnoMatricula} - ${p.concepto} - $${p.monto}</div>`).join('');
+        } catch(e) { console.error(e); }
+    }
+
+    async function actualizarEstadoPago(alumnoId, estadoPago) {
+        try {
+            const res = await fetch(`${API_ADMIN}/alumnos/${alumnoId}/pago`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ estadoPago })
+            });
+            if (res.ok) { alert('Estado de pago actualizado'); cargarEstudiantes(); }
+            else { const err = await res.json(); alert('Error: ' + err.error); }
+        } catch (err) { alert('Error de conexión'); }
+    }
+
+    async function cargarSelectsReportes() {
+        try {
+            const resGrupos = await fetch(`${API_ADMIN}/grupos`);
+            const grupos = await resGrupos.json();
+            const selectGrupo = document.getElementById('reporte-grupo');
+            if (selectGrupo) selectGrupo.innerHTML = '<option value="">Todos</option>' + grupos.map(g => `<option value="${g.nombre}">${g.nombre}</option>`).join('');
+            const resAlumnos = await fetch(`${API_ADMIN}/alumnos`);
+            const alumnos = await resAlumnos.json();
+            const carreras = new Set();
+            alumnos.forEach(a => { if(a.carrera) carreras.add(a.carrera); });
+            const selectCarrera = document.getElementById('reporte-carrera');
+            if (selectCarrera) selectCarrera.innerHTML = '<option value="">Todas</option>' + Array.from(carreras).map(c => `<option value="${c}">${c}</option>`).join('');
+        } catch(e) { console.error(e); }
+    }
+
+    async function cargarGraficos() {
+    try {
+        // 1. Obtener datos de ingresos mensuales
+        const resIngresos = await fetch(`${API_ADMIN}/reportes/ingresos-mensuales`);
+        const ingresos = await resIngresos.json();
+
+        // 2. Obtener datos de morosidad por carrera
+        const resMorosidad = await fetch(`${API_ADMIN}/reportes/morosidad-carreras`);
+        const morosidad = await resMorosidad.json();
+
+        // Destruir gráficos anteriores si existen
+        if (ingresosChart) ingresosChart.destroy();
+        if (morosidadChart) morosidadChart.destroy();
+
+        // Crear gráfico de ingresos (barras)
+        ingresosChart = new Chart(document.getElementById('chart-ingresos'), {
+            type: 'bar',
+            data: {
+                labels: ingresos.labels || [],
+                datasets: [{
+                    label: 'Ingresos (MXN)',
+                    data: ingresos.values || [],
+                    backgroundColor: '#4f46e5',
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { position: 'top' }
+                }
+            }
+        });
+
+        // Crear gráfico de morosidad (pastel)
+        morosidadChart = new Chart(document.getElementById('chart-morosidad'), {
+            type: 'pie',
+            data: {
+                labels: morosidad.labels || [],
+                datasets: [{
+                    data: morosidad.values || [],
+                    backgroundColor: ['#f59e0b', '#ef4444', '#10b981', '#3b82f6', '#8b5cf6']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { position: 'right' }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error cargando gráficos:', error);
+    }
+}
+
+    async function cargarMateriasEnSelects() {
+        try {
+            const res = await fetch(`${API_ADMIN}/materias`);
+            const materias = await res.json();
+            const selects = ['asignar-materia', 'materia-lista', 'horario-materia'];
+            selects.forEach(id => {
+                const select = document.getElementById(id);
+                if (select) {
+                    select.innerHTML = '<option value="">-- Seleccionar materia --</option>';
+                    if (materias.length === 0) select.innerHTML += '<option value="" disabled>No hay materias registradas</option>';
+                    else materias.forEach(m => select.innerHTML += `<option value="${m.nombre}">${m.nombre}</option>`);
+                }
+            });
+        } catch (err) { console.error("Error cargando materias:", err); }
+    }
+
+    async function cargarGruposEnSelects() {
+        try {
+            const res = await fetch(`${API_ADMIN}/grupos`);
+            const grupos = await res.json();
+            const selects = ['asignar-grupo-docente', 'grupo-lista', 'horario-grupo'];
+            selects.forEach(id => {
+                const select = document.getElementById(id);
+                if (select) {
+                    select.innerHTML = '<option value="">-- Seleccionar grupo --</option>';
+                    grupos.forEach(g => select.innerHTML += `<option value="${g._id}">${g.nombre}</option>`);
+                }
+            });
+        } catch (err) { console.error("Error cargando grupos en selects:", err); }
+    }
+
+    async function cargarAsignaciones() {
+        try {
+            const res = await fetch(`${API_ADMIN}/docentes/asignaciones`);
+            const data = await res.json();
+            const container = document.getElementById('lista-asignaciones');
+            if (container) {
+                container.innerHTML = '';
+                if (data.length === 0) container.innerHTML = '<p class="text-slate-500">No hay asignaciones</p>';
+                else data.forEach(asig => container.innerHTML += `<div class="bg-white p-2 rounded shadow-sm mb-1">${asig.docenteMatricula} - ${asig.materia}</div>`);
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    async function cargarKPIs() {
+    try {
+        const res = await fetch(`${API_ADMIN}/dashboard/kpis`);
+        const data = await res.json();
+        document.getElementById('kpi-total-alumnos').innerText = data.totalAlumnos || 0;
+        document.getElementById('kpi-total-docentes').innerText = data.totalDocentes || 0;
+        document.getElementById('kpi-morosidad').innerText = (data.morosidad || 0) + '%';
+        document.getElementById('kpi-desercion').innerText = (data.desercion || 0) + '%';
+    } catch(e) { console.error(e); }
+}
+
+    async function cargarConceptos() {
+        try {
+            const res = await fetch(`${API_ADMIN}/conceptos`);
+            const data = await res.json();
+            const container = document.getElementById('conceptos-lista');
+            if (container) {
+                container.innerHTML = '';
+                data.forEach(c => {
+                    container.innerHTML += `<div class="flex justify-between items-center bg-white p-2 rounded"><span>${c.nombre} - $${c.monto}</span><button class="text-red-500 eliminar-concepto" data-id="${c._id}">🗑️</button></div>`;
+                });
+                document.querySelectorAll('.eliminar-concepto').forEach(btn => btn.addEventListener('click', () => eliminarConcepto(btn.dataset.id)));
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    async function eliminarConcepto(id) {
+        await fetch(`${API_ADMIN}/conceptos/${id}`, { method: 'DELETE' });
+        cargarConceptos();
+    }
+
+    async function agregarConcepto() {
+        const nombre = document.getElementById('nuevo-concepto').value.trim();
+        const monto = parseFloat(document.getElementById('nuevo-monto').value);
+        if (!nombre || isNaN(monto)) return alert("Nombre y monto válidos");
+        await fetch(`${API_ADMIN}/conceptos`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ agregar: { nombre, monto } }) });
+        cargarConceptos();
+        document.getElementById('nuevo-concepto').value = '';
+        document.getElementById('nuevo-monto').value = '';
+    }
+
+    async function guardarConceptos() {
+        const conceptos = [];
+        document.querySelectorAll('#conceptos-lista div').forEach(div => {
+            const texto = div.innerText.split(' - $');
+            if (texto.length === 2) conceptos.push({ nombre: texto[0], monto: parseFloat(texto[1].replace('🗑️', '')) });
+        });
+        await fetch(`${API_ADMIN}/conceptos`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ conceptos }) });
+        alert("Conceptos guardados");
+    }
+
+    document.getElementById('btn-agregar-concepto')?.addEventListener('click', agregarConcepto);
+    document.getElementById('btn-guardar-conceptos')?.addEventListener('click', guardarConceptos);
+    document.getElementById('btn-bulk-upload')?.addEventListener('click', () => alert("Endpoint: POST /api/admin/import-users"));
+    document.getElementById('btn-reporte-morosidad')?.addEventListener('click', () => alert("GET /api/reportes/morosidad"));
+    document.getElementById('btn-estado-cuenta')?.addEventListener('click', () => {
+        const mat = document.getElementById('estado-cuenta-matricula').value;
+        alert(`GET /api/reportes/estado-cuenta/${mat}`);
+    });
+    document.getElementById('btn-generar-reporte')?.addEventListener('click', () => {
+        const tipo = document.getElementById('tipo-reporte').value;
+        alert(`GET /api/reportes/estadisticos?tipo=${tipo}`);
+    });
+    document.getElementById('btn-exportar')?.addEventListener('click', () => {
+        const tipo = document.getElementById('exportar-tipo').value;
+        const formato = document.getElementById('exportar-formato').value;
+        alert(`Exportar ${tipo} en ${formato}`);
+    });
+    document.getElementById('btn-custom-report')?.addEventListener('click', () => {
+        const query = document.getElementById('query-custom').value;
+        alert(`POST /api/reportes/custom con: ${query}`);
+    });
+
+    // Funciones de pago
+    let alumnoActual = null;
+    async function buscarAlumnoPorMatricula() {
+        const matricula = document.getElementById('pago-matricula').value.trim();
+        if (!matricula) return alert("Ingrese una matrícula");
+        try {
+            const res = await fetch(`${API_ADMIN}/alumnos?matricula=${matricula}`);
+            const alumnos = await res.json();
+            if (!alumnos.length) {
+                alert("Alumno no encontrado");
+                document.getElementById('info-alumno').classList.add('hidden');
+                document.getElementById('deudas-info').classList.add('hidden');
+                document.getElementById('historial-pagos').innerHTML = '';
+                alumnoActual = null;
+                return;
+            }
+            alumnoActual = alumnos[0];
+            document.getElementById('alumno-nombre-info').innerText = alumnoActual.nombre;
+            document.getElementById('alumno-carrera-info').innerText = alumnoActual.carrera || '-';
+            document.getElementById('alumno-grupo-info').innerText = alumnoActual.grupoActual?.nombre || '-';
+            document.getElementById('alumno-estado-info').innerText = alumnoActual.estado;
+            document.getElementById('info-alumno').classList.remove('hidden');
+            document.getElementById('pago-alumno-id').value = alumnoActual._id;
+            const resDeudas = await fetch(`${API_ADMIN}/pagos/pendientes/${alumnoActual.matricula}`);
+            const deudas = await resDeudas.json();
+            const deudasDiv = document.getElementById('deudas-info');
+            if (deudas.length > 0) {
+                document.getElementById('lista-deudas').innerHTML = deudas.map(d => `<li>${d.concepto} - $${d.monto}</li>`).join('');
+                deudasDiv.classList.remove('hidden');
+            } else deudasDiv.classList.add('hidden');
+            const resHistorial = await fetch(`${API_ADMIN}/pagos?matricula=${alumnoActual.matricula}`);
+            const pagos = await resHistorial.json();
+            const historialDiv = document.getElementById('historial-pagos');
+            if (pagos.length === 0) historialDiv.innerHTML = '<p class="text-slate-500">No hay pagos registrados.</p>';
+            else historialDiv.innerHTML = pagos.map(p => `<div class="bg-white p-2 rounded shadow-sm">${p.concepto} - $${p.monto} - ${new Date(p.fecha).toLocaleDateString()}</div>`).join('');
+        } catch(err) { console.error(err); alert("Error al buscar alumno"); }
+    }
+
+    async function registrarPago() {
+        if (!alumnoActual) return alert("Primero busque un alumno");
+        const concepto = document.getElementById('pago-concepto').value;
+        const monto = parseFloat(document.getElementById('pago-monto').value);
+        const fecha = document.getElementById('pago-fecha').value;
+        if (!concepto || !monto) return alert("Complete concepto y monto");
+        try {
+            const res = await fetch(`${API_ADMIN}/pagos`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    alumnoMatricula: alumnoActual.matricula,
+                    alumnoId: alumnoActual._id,
+                    concepto,
+                    monto,
+                    fecha: fecha || new Date().toISOString().split('T')[0]
+                })
+            });
+            if (res.ok) {
+                alert("Pago registrado correctamente");
+                buscarAlumnoPorMatricula();
+                document.getElementById('pago-concepto').value = '';
+                document.getElementById('pago-monto').value = '';
+                document.getElementById('pago-fecha').value = '';
+            } else alert("Error al registrar pago");
+        } catch(err) { alert("Error de conexión"); }
+    }
+
+    document.getElementById('btn-buscar-alumno')?.addEventListener('click', buscarAlumnoPorMatricula);
+    document.getElementById('pago-matricula')?.addEventListener('keypress', (e) => { if(e.key === 'Enter') buscarAlumnoPorMatricula(); });
+    document.getElementById('btn-registrar-pago')?.addEventListener('click', registrarPago);
+
+    // Reportes
+    async function generarReporteAlumnos() {
+        const params = new URLSearchParams();
+        if(document.getElementById('reporte-matricula').value) params.append('matricula', document.getElementById('reporte-matricula').value);
+        if(document.getElementById('reporte-nombre').value) params.append('nombre', document.getElementById('reporte-nombre').value);
+        if(document.getElementById('reporte-grupo').value) params.append('grupo', document.getElementById('reporte-grupo').value);
+        if(document.getElementById('reporte-carrera').value) params.append('carrera', document.getElementById('reporte-carrera').value);
+        const res = await fetch(`${API_ADMIN}/reportes/alumnos?${params.toString()}`);
+        const data = await res.json();
+        const tbody = document.getElementById('tabla-resultados-body');
+        tbody.innerHTML = '';
+        data.forEach(row => {
+            tbody.innerHTML += `<tr class="border-b"><td class="p-2">${row.matricula}</td><td class="p-2">${row.nombre}</td><td class="p-2">${row.carrera||'-'}</td><td class="p-2">${row.grupo||'-'}</td><td class="p-2">${row.estado}</td><td class="p-2"><button class="text-blue-600" data-mat="${row.matricula}">Ver pagos</button></td></tr>`;
+        });
+        document.querySelectorAll('.ver-detalle').forEach(btn => btn.addEventListener('click', () => alert(`Mostrar pagos de ${btn.dataset.mat} (implementar)`)));
+    }
+
+    async function generarReportePagosAlumno() {
+        const mat = document.getElementById('reporte-matricula').value;
+        if (!mat) return alert('Ingresa una matrícula en el filtro');
+        const res = await fetch(`${API_ADMIN}/pagos?matricula=${mat}`);
+        const pagos = await res.json();
+        const tbody = document.getElementById('tabla-resultados-body');
+        tbody.innerHTML = '<tr><th>Fecha</th><th>Concepto</th><th>Monto</th></tr>';
+        pagos.forEach(p => tbody.innerHTML += `<tr><td class="p-2">${new Date(p.fecha).toLocaleDateString()}</td><td class="p-2">${p.concepto}</td><td class="p-2">$${p.monto}</td></tr>`);
+    }
+
+    function exportarResultadoCSV() {
+        const filas = document.querySelectorAll('#tabla-resultados-body tr');
+        if (filas.length === 0) return alert('No hay datos');
+        let csv = '';
+        filas.forEach(tr => {
+            const celdas = tr.querySelectorAll('td');
+            csv += Array.from(celdas).map(cd => cd.innerText).join(',') + '\n';
+        });
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'reporte.csv';
+        link.click();
+    }
+
+    document.getElementById('btn-reporte-alumnos')?.addEventListener('click', generarReporteAlumnos);
+    document.getElementById('btn-reporte-pagos-alumno')?.addEventListener('click', generarReportePagosAlumno);
+    document.getElementById('btn-exportar-reporte')?.addEventListener('click', exportarResultadoCSV);
+
+    // Funciones auxiliares (grupos, editar, etc.)
+    async function cargarGruposSelect(selectId, selectedId = '') {
+        try {
+            const res = await fetch(`${API_ADMIN}/grupos`);
+            const grupos = await res.json();
+            const select = document.getElementById(selectId);
+            if (select) {
+                select.innerHTML = '<option value="">Sin grupo</option>';
+                grupos.forEach(g => select.innerHTML += `<option value="${g._id}" ${selectedId === g._id ? 'selected' : ''}>${escapeHtml(g.nombre)}</option>`);
+            }
+            console.log(`Grupos cargados en ${selectId}:`, grupos.length);
+        } catch(err) { console.error("Error cargando grupos:", err); }
+    }
+
+    // Función editarEstudiante corregida: usa await y muestra el modal solo después de cargar grupos
+    window.editarEstudiante = async function(id) {
+        if (!id) return alert('ID de estudiante no válido');
+        try {
+            const res = await fetch(`${API_ADMIN}/alumnos/${id}`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const est = await res.json();
+            document.getElementById('modal-estudiante-title').innerText = 'Editar Estudiante';
+            document.getElementById('estudiante-id').value = est._id;
+            document.getElementById('est-nombre').value = est.nombre || '';
+            document.getElementById('est-matricula').value = est.matricula || '';
+            document.getElementById('est-email').value = est.email || '';
+            document.getElementById('est-username').value = est.username || '';
+            document.getElementById('est-password').value = '';
+            document.getElementById('est-carrera').value = est.carrera || '';
+            document.getElementById('est-facultad').value = est.facultad || '';
+            const grupoActualId = est.grupoActual?._id || est.grupoActual || '';
+            // Cargar grupos y seleccionar el actual
+            await cargarGruposSelect('est-grupo', grupoActualId);
+            document.getElementById('modal-estudiante').classList.remove('hidden');
+        } catch(err) { console.error(err); alert('Error al cargar datos del estudiante'); }
+    };
+
+    async function editarGrupo(id) {
+        try {
+            const res = await fetch(`${API_ADMIN}/grupos/${id}`);
+            const grupo = await res.json();
+            if (!res.ok) throw new Error('Error al cargar grupo');
+            document.getElementById('grupo-id').value = grupo._id;
+            document.getElementById('grupo-nombre').value = grupo.nombre;
+            document.getElementById('grupo-carrera').value = grupo.carrera;
+            document.getElementById('grupo-facultad').value = grupo.facultad;
+            document.getElementById('grupo-horario').value = grupo.horario || '';
+            document.getElementById('modal-grupo').classList.remove('hidden');
+        } catch(err) { console.error(err); alert('Error al cargar datos del grupo'); }
+    }
+
+    async function eliminarGrupo(id) {
+        if (!confirm('¿Eliminar este grupo? Se perderán los datos asociados.')) return;
+        try {
+            const res = await fetch(`${API_ADMIN}/grupos/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                alert('Grupo eliminado');
+                cargarGrupos();
+            } else {
+                alert('Error al eliminar grupo');
+            }
+        } catch(err) { console.error(err); alert('Error de conexión'); }
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    // ========== INICIALIZACIÓN ==========
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('btn-asignar-materia')?.addEventListener('click', async () => {
+            const docenteIdentificador = document.getElementById('asignar-docente').value.trim();
+            const materia = document.getElementById('asignar-materia').value;
+            const grupoId = document.getElementById('asignar-grupo-docente').value;
+            if (!docenteIdentificador || !materia || !grupoId) return alert("❌ Complete todos los campos");
+            try {
+                const res = await fetch(`${API_ADMIN}/docentes/asignar`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ docenteIdentificador, materia, grupoId }) });
+                const data = await res.json();
+                if (res.ok) {
+                    alert("✅ Asignación guardada correctamente");
+                    if (typeof cargarAsignaciones === 'function') cargarAsignaciones();
+                    document.getElementById('asignar-docente').value = '';
+                    document.getElementById('asignar-materia').value = '';
+                    document.getElementById('asignar-grupo-docente').value = '';
+                } else alert("❌ Error: " + (data.error || "No se pudo asignar"));
+            } catch (err) { alert("❌ Error de conexión con el servidor"); }
+        });
+        document.getElementById('show-login-btn').addEventListener('click', showLogin);
+        document.getElementById('show-register-btn').addEventListener('click', showRegister);
+        document.getElementById('login-form').addEventListener('submit', handleLogin);
+        document.getElementById('register-form').addEventListener('submit', handleRegister);
+        document.getElementById('logout-admin')?.addEventListener('click', logout);
+        document.getElementById('logout-alumno')?.addEventListener('click', logout);
+        document.getElementById('logout-docente')?.addEventListener('click', logout);
+        document.querySelectorAll('.role-login-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.getElementById('login-rol').value = btn.getAttribute('data-role');
+                document.querySelectorAll('.role-login-btn').forEach(b => b.classList.remove('role-login-active'));
+                btn.classList.add('role-login-active');
+            });
+        });
+        document.querySelector('.role-login-btn[data-role="administrador"]').classList.add('role-login-active');
+        document.querySelectorAll('.reg-role-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentRegRole = btn.getAttribute('data-reg-role');
+                document.querySelectorAll('.reg-role-btn').forEach(b => {
+                    b.classList.remove('reg-tab-active');
+                    b.classList.add('bg-slate-200', 'text-slate-800');
+                });
+                btn.classList.add('reg-tab-active');
+                btn.classList.remove('bg-slate-200');
+                renderRegisterFields();
+            });
+        });
+        document.querySelector('.reg-role-btn[data-reg-role="alumno"]').classList.add('reg-tab-active');
+        renderRegisterFields();
+        window.actualizarSugerenciaUsername = actualizarSugerenciaUsername;
+        asignarEventosBotones();
+    });
+    document.getElementById('btn-subir-boleta')?.addEventListener('click', async () => {
+    const matricula = document.getElementById('boleta-matricula').value.trim();
+    const periodo = document.getElementById('boleta-periodo').value.trim();
+    const archivo = document.getElementById('boleta-archivo').files[0];
+    if (!matricula || !periodo || !archivo) return alert('Complete todos los campos');
+    const formData = new FormData();
+    formData.append('alumnoMatricula', matricula);
+    formData.append('periodo', periodo);
+    formData.append('archivo', archivo);
+    const res = await fetch(`${API_ADMIN}/boletas/subir`, { method: 'POST', body: formData });
+    if (res.ok) alert('Boleta subida correctamente');
+    else alert('Error al subir');
+});
+
+</script>
+</body>
+</html>

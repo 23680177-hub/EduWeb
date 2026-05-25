@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduWeb | Panel Estudiante</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-image: url('fondo.png');
+            background-size: cover;
+            background-attachment: fixed;
+            background-color: #0b1120;
+        }
+        .white-card-solid {
+            background: #ffffff !important;
+            color: #0f172a !important;
+            border-radius: 2rem;
+            padding: 2rem;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.35);
+        }
+        .btn-primary {
+            background: #4f46e5;
+            color: white;
+            font-weight: bold;
+            padding: 0.75rem;
+            border-radius: 1rem;
+            transition: 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-primary:hover {
+            background: #4338ca;
+            transform: scale(0.98);
+        }
+        .tab-active {
+            background: #4f46e5 !important;
+            color: white !important;
+        }
+    </style>
+</head>
+<body>
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="white-card-solid max-w-6xl mx-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-black text-slate-800">Panel de Estudiante</h2>
+            <button id="logout" class="bg-red-500 text-white px-4 py-2 rounded-xl">Cerrar sesión</button>
+        </div>
+        <p class="text-slate-600 mb-6">Bienvenido, <span id="estudiante-nombre"></span> (Matrícula: <span id="estudiante-matricula"></span>)</p>
+
+        <!-- Pestañas -->
+        <div class="flex flex-wrap gap-2 border-b border-slate-200 mb-6">
+            <button data-tab="perfil" class="tab-estudiante-btn px-4 py-2 rounded-t-lg font-semibold bg-indigo-600 text-white">Mi Perfil</button>
+            <button data-tab="materias" class="tab-estudiante-btn px-4 py-2 rounded-t-lg font-semibold bg-slate-200 text-slate-700">Mis Materias</button>
+            <button data-tab="horario" class="tab-estudiante-btn px-4 py-2 rounded-t-lg font-semibold bg-slate-200 text-slate-700">Horario</button>
+            <button data-tab="solicitudes" class="tab-estudiante-btn px-4 py-2 rounded-t-lg font-semibold bg-slate-200 text-slate-700">Solicitar Materias</button>
+            <button data-tab="clases" class="tab-estudiante-btn px-4 py-2 rounded-t-lg font-semibold bg-slate-200 text-slate-700">Mis Clases</button>
+            <button data-tab="misentregas" class="tab-estudiante-btn px-4 py-2 rounded-t-lg font-semibold bg-slate-200 text-slate-700">Mis Entregas</button>
+            <button data-tab="boletas" class="tab-estudiante-btn px-4 py-2 rounded-t-lg font-semibold bg-slate-200 text-slate-700">Boletas</button>
+        </div>
+
+        <!-- Contenido pestaña Perfil -->
+        <div id="tab-perfil" class="tab-content">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-4">Datos personales</h3>
+                    <div class="space-y-3">
+                        <div><label class="block font-semibold">Matrícula</label><input type="text" id="perfil-matricula" class="w-full p-2 border rounded bg-gray-100" readonly></div>
+                        <div><label class="block font-semibold">Nombre completo</label><input type="text" id="perfil-nombre" class="w-full p-2 border rounded"></div>
+                        <div><label class="block font-semibold">Correo electrónico</label><input type="email" id="perfil-email" class="w-full p-2 border rounded"></div>
+                        <div><label class="block font-semibold">Teléfono</label><input type="tel" id="perfil-telefono" class="w-full p-2 border rounded"></div>
+                        <div><label class="block font-semibold">Carrera</label><input type="text" id="perfil-carrera" class="w-full p-2 border rounded"></div>
+                        <div><label class="block font-semibold">Grupo</label><input type="text" id="perfil-grupo" class="w-full p-2 border rounded" readonly></div>
+                        <div><label class="block font-semibold">Estado</label><input type="text" id="perfil-estado" class="w-full p-2 border rounded" readonly></div>
+                        <button id="btn-guardar-perfil" class="bg-green-600 text-white px-4 py-2 rounded-xl w-full">Guardar cambios</button>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-4">Cambiar contraseña</h3>
+                    <div class="space-y-3">
+                        <div><label class="block font-semibold">Contraseña actual</label><input type="password" id="old-password" class="w-full p-2 border rounded"></div>
+                        <div><label class="block font-semibold">Nueva contraseña</label><input type="password" id="new-password" class="w-full p-2 border rounded"></div>
+                        <div><label class="block font-semibold">Confirmar nueva</label><input type="password" id="confirm-password" class="w-full p-2 border rounded"></div>
+                        <button id="btn-cambiar-password" class="bg-indigo-600 text-white px-4 py-2 rounded-xl w-full">Cambiar contraseña</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenido pestaña Mis Materias -->
+        <div id="tab-materias" class="tab-content hidden">
+            <h3 class="text-xl font-bold text-slate-800 mb-4">Materias en las que estás inscrito</h3>
+            <div id="lista-materias" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </div>
+
+        <!-- Contenido pestaña Horario -->
+        <div id="tab-horario" class="tab-content hidden">
+            <div class="bg-white rounded-xl shadow p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-slate-800">Mi Horario Personal</h3>
+                    <div class="flex gap-2">
+                        <button id="btn-limpiar-horario" class="bg-red-600 text-white px-3 py-1 rounded text-sm">🗑️ Limpiar todo</button>
+                        <button id="btn-agregar-horario" class="bg-green-600 text-white px-3 py-1 rounded text-sm">+ Agregar Clase</button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm border">
+                        <thead class="bg-slate-100">
+                            <tr>
+                                <th class="p-2 border">Hora / Día</th>
+                                <th class="p-2 border">Lunes</th>
+                                <th class="p-2 border">Martes</th>
+                                <th class="p-2 border">Miércoles</th>
+                                <th class="p-2 border">Jueves</th>
+                                <th class="p-2 border">Viernes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="horario-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal para horario -->
+        <div id="modal-horario-alumno" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div class="bg-white p-6 rounded-2xl w-full max-w-md">
+                <h3 class="text-xl font-bold mb-4" id="modal-horario-title">Agregar Clase</h3>
+                <input type="hidden" id="horario-edit-id">
+                <div class="mb-2">
+                    <label class="block text-sm font-semibold">Día</label>
+                    <select id="horario-dia" class="w-full p-2 border rounded">
+                        <option value="">Seleccionar día</option>
+                        <option value="Lunes">Lunes</option>
+                        <option value="Martes">Martes</option>
+                        <option value="Miércoles">Miércoles</option>
+                        <option value="Jueves">Jueves</option>
+                        <option value="Viernes">Viernes</option>
+                    </select>
+                </div>
+                <div class="mb-2">
+                    <label class="block text-sm font-semibold">Hora</label>
+                    <input type="text" id="horario-hora" placeholder="Ej: 8:00-10:00" class="w-full p-2 border rounded">
+                </div>
+                <div class="mb-2">
+                    <label class="block text-sm font-semibold">Materia</label>
+                    <select id="horario-materia" class="w-full p-2 border rounded">
+                        <option value="">Seleccionar materia</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold">Salón</label>
+                    <input type="text" id="horario-salon" placeholder="Ej: A-101" class="w-full p-2 border rounded">
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button id="btn-eliminar-horario" class="bg-red-600 text-white px-4 py-2 rounded hidden">Eliminar clase</button>
+                    <button id="btn-cerrar-modal-horario" class="bg-gray-300 px-4 py-2 rounded">Cancelar</button>
+                    <button id="btn-guardar-horario" class="bg-blue-600 text-white px-4 py-2 rounded">Guardar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenido pestaña Solicitar Materias -->
+        <div id="tab-solicitudes" class="tab-content hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white rounded-xl shadow-md border border-indigo-200 p-5">
+                    <h4 class="font-bold text-lg text-indigo-800 mb-3">📚 Materias disponibles para solicitar</h4>
+                    <div id="materias-disponibles" class="max-h-96 overflow-y-auto space-y-2"></div>
+                </div>
+                <div class="bg-white rounded-xl shadow-md border border-indigo-200 p-5">
+                    <h4 class="font-bold text-lg text-indigo-800 mb-3">⏳ Mis solicitudes pendientes</h4>
+                    <div id="solicitudes-pendientes" class="max-h-96 overflow-y-auto space-y-2"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenido pestaña Mis Clases -->
+        <div id="tab-clases" class="tab-content hidden">
+            <h3 class="text-xl font-bold text-slate-800 mb-4">Clases en las que estás inscrito</h3>
+            <div id="lista-clases-alumno" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </div>
+
+        <!-- Contenido pestaña Mis Entregas -->
+        <div id="tab-misentregas" class="tab-content hidden">
+            <h3 class="text-xl font-bold text-slate-800 mb-4">Historial de entregas</h3>
+            <div id="lista-mis-entregas" class="space-y-2"></div>
+        </div>
+
+        <!-- Contenido pestaña Boletas -->
+        <div id="tab-boletas" class="tab-content hidden">
+            <h3 class="text-xl font-bold text-slate-800 mb-4">Mis boletas de calificaciones</h3>
+            <div id="lista-boletas" class="space-y-2"></div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL DETALLE CLASE (ESTUDIANTE) -->
+<div id="detalle-clase-modal-est" class="hidden fixed inset-0 bg-black/70 backdrop-blur flex items-center justify-center z-50 overflow-y-auto">
+    <div class="bg-white rounded-2xl w-full max-w-6xl mx-4 my-8 shadow-2xl">
+        <div class="flex justify-between items-center p-4 border-b">
+            <h3 class="text-2xl font-bold text-indigo-800" id="modal-est-clase-nombre"></h3>
+            <button id="cerrar-modal-est-clase" class="text-red-500 hover:text-red-700 text-2xl">&times;</button>
+        </div>
+        <div class="p-6">
+            <div class="flex flex-wrap gap-2 border-b mb-4">
+                <button data-subtab-est="tablero" class="subtab-btn-est px-4 py-2 rounded-t-lg font-semibold bg-indigo-600 text-white">Tablón</button>
+                <button data-subtab-est="tareas" class="subtab-btn-est px-4 py-2 rounded-t-lg font-semibold bg-slate-200 text-slate-700">Tareas</button>
+                <button data-subtab-est="materiales" class="subtab-btn-est px-4 py-2 rounded-t-lg font-semibold bg-slate-200 text-slate-700">Materiales</button>
+            </div>
+            <div id="modal-est-subtab-tablero" class="subtab-content-est">
+                <div id="modal-est-comentarios" class="space-y-3 max-h-96 overflow-y-auto mb-4"></div>
+                <textarea id="modal-est-nuevo-comentario" rows="2" placeholder="Escribe un comentario..." class="w-full p-2 border rounded"></textarea>
+                <button id="modal-est-btn-enviar-comentario" class="mt-2 bg-blue-600 text-white px-4 py-1 rounded">Publicar</button>
+            </div>
+            <div id="modal-est-subtab-tareas" class="subtab-content-est hidden">
+                <div id="modal-est-lista-tareas" class="space-y-4"></div>
+            </div>
+            <div id="modal-est-subtab-materiales" class="subtab-content-est hidden">
+                <div id="modal-est-lista-materiales" class="space-y-2"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL ENTREGAR TAREA -->
+<div id="modal-entregar-tarea" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-2xl w-full max-w-md">
+        <h3 class="text-xl font-bold mb-4" id="entregar-tarea-titulo"></h3>
+        <textarea id="entrega-comentario" placeholder="Comentario (opcional)" rows="3" class="w-full p-2 border rounded mb-2"></textarea>
+        <input type="file" id="entrega-archivo" class="w-full p-2 border rounded mb-2">
+        <div class="flex justify-end gap-2">
+            <button id="btn-cerrar-entrega" class="bg-gray-300 px-4 py-2 rounded">Cancelar</button>
+            <button id="btn-entregar" class="bg-green-600 text-white px-4 py-2 rounded">Entregar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ========== CONFIGURACIÓN ==========
+    const API_ADMIN = '/api/admin';
+const API_ESTUDIANTE = '/api/estudiante';
+    const usuario = JSON.parse(sessionStorage.getItem('usuario'));
+    if (!usuario || usuario.rol !== 'alumno') {
+        window.location.href = './Sistema_Gestion_Escolar.html';
+    }
+    const matricula = usuario.identificador;
+    const alumnoId = usuario._id;
+    document.getElementById('estudiante-nombre').innerText = usuario.nombre;
+    document.getElementById('estudiante-matricula').innerText = matricula;
+
+    // ========== FUNCIÓN AUXILIAR ==========
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    // ========== PERFIL ==========
+    async function cargarPerfil() {
+        try {
+            const res = await fetch(`${API_ADMIN}/alumnos?matricula=${matricula}`);
+            const alumnos = await res.json();
+            if (alumnos.length === 0) return;
+            const data = alumnos[0];
+            document.getElementById('perfil-matricula').value = data.matricula;
+            document.getElementById('perfil-nombre').value = data.nombre;
+            document.getElementById('perfil-email').value = data.email || '';
+            document.getElementById('perfil-telefono').value = data.telefono || '';
+            document.getElementById('perfil-carrera').value = data.carrera || '';
+            document.getElementById('perfil-grupo').value = data.grupoActual?.nombre || '';
+            document.getElementById('perfil-estado').value = data.estado || 'activo';
+        } catch (err) {
+            console.error("Error cargando perfil", err);
+        }
+    }
+
+    document.getElementById('btn-guardar-perfil')?.addEventListener('click', async () => {
+        const nombre = document.getElementById('perfil-nombre').value.trim();
+        const email = document.getElementById('perfil-email').value.trim();
+        const telefono = document.getElementById('perfil-telefono').value.trim();
+        const carrera = document.getElementById('perfil-carrera').value.trim();
+        if (!nombre) return alert('El nombre es obligatorio');
+        try {
+            const res = await fetch(`${API_ADMIN}/alumnos/${alumnoId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre, email, telefono, carrera })
+            });
+            if (res.ok) {
+                alert('Perfil actualizado correctamente');
+                document.getElementById('estudiante-nombre').innerText = nombre;
+                usuario.nombre = nombre;
+                sessionStorage.setItem('usuario', JSON.stringify(usuario));
+                await cargarPerfil();
+            } else {
+                const err = await res.json();
+                alert('Error: ' + (err.error || 'No se pudo actualizar'));
+            }
+        } catch (err) {
+            alert('Error de conexión');
+        }
+    });
+
+    document.getElementById('btn-cambiar-password')?.addEventListener('click', async () => {
+        const oldPassword = document.getElementById('old-password').value;
+        const newPassword = document.getElementById('new-password').value;
+        const confirm = document.getElementById('confirm-password').value;
+        if (!oldPassword || !newPassword) return alert('Complete los campos');
+        if (newPassword !== confirm) return alert('Las nuevas contraseñas no coinciden');
+        try {
+            const res = await fetch(`${API_ADMIN}/alumno/password`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ matricula, oldPassword, newPassword })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                alert('Contraseña cambiada');
+                document.getElementById('old-password').value = '';
+                document.getElementById('new-password').value = '';
+                document.getElementById('confirm-password').value = '';
+            } else alert(data.error);
+        } catch (err) {
+            alert('Error de conexión');
+        }
+    });
+
+    // ========== HORARIO PERSONAL (FUNCIONES NUEVAS Y LIMPIAS) ==========
+    let horarioEditandoId = null;
+    let horarioEventosIniciados = false;
+    const dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
+
+    async function obtenerMateriasInscritas() {
+        try {
+            const res = await fetch(`${API_ADMIN}/alumnos/${alumnoId}/carga`);
+            if (!res.ok) throw new Error('Error al obtener materias');
+            const materias = await res.json();
+            return materias.map(m => ({ nombre: m.nombre, _id: m._id }));
+        } catch (err) {
+            console.error('Error obteniendo materias:', err);
+            return [];
+        }
+    }
+
+    async function cargarHorarioPersonal() {
+        const tbody = document.getElementById('horario-tbody');
+        if (!tbody) return;
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center p-2">Cargando horario...</td></tr>';
+        try {
+            const res = await fetch(`${API_ADMIN}/alumnos/${matricula}/horario-personal`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const horarios = await res.json();
+            if (horarios.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center p-2 text-slate-500">No hay clases en tu horario. Agrega una usando el botón "+".</td></tr>';
+                return;
+            }
+            // Obtener horas únicas y ordenarlas
+            const horasSet = new Set();
+            horarios.forEach(h => horasSet.add(h.hora));
+            let horasUnicas = Array.from(horasSet);
+            horasUnicas.sort((a, b) => {
+                const horaA = parseInt(a.split('-')[0]);
+                const horaB = parseInt(b.split('-')[0]);
+                return horaA - horaB;
+            });
+            const mapa = new Map();
+            horarios.forEach(h => {
+                const key = `${h.dia}|${h.hora}`;
+                mapa.set(key, h);
+            });
+            tbody.innerHTML = '';
+            for (let hora of horasUnicas) {
+                const row = document.createElement('tr');
+                row.className = 'border-b';
+                row.innerHTML = `<td class="p-2 font-bold bg-slate-50 border">${escapeHtml(hora)}</td>`;
+                for (let dia of dias) {
+                    const key = `${dia}|${hora}`;
+                    const clase = mapa.get(key);
+                    if (clase) {
+                        row.innerHTML += `<td class="p-2 border cursor-pointer hover:bg-slate-100" data-dia="${dia}" data-hora="${hora}" data-materia="${escapeHtml(clase.materia)}" data-salon="${escapeHtml(clase.salon || '')}" data-id="${clase._id}">
+                            <div class="font-semibold">${escapeHtml(clase.materia)}</div>
+                            <div class="text-xs text-slate-500">${escapeHtml(clase.salon || 'Sin salón')}</div>
+                        </td>`;
+                    } else {
+                        row.innerHTML += `<td class="p-2 border cursor-pointer hover:bg-slate-100" data-dia="${dia}" data-hora="${hora}">
+                            <span class="text-slate-400 text-sm">+ Agregar</span>
+                        </td>`;
+                    }
+                }
+                tbody.appendChild(row);
+            }
+            // Asignar eventos a las celdas
+            document.querySelectorAll('#horario-tbody td[data-dia]').forEach(cell => {
+                cell.removeEventListener('click', manejarClickCelda);
+                cell.addEventListener('click', manejarClickCelda);
+            });
+        } catch (err) {
+            console.error('Error cargando horario personal:', err);
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center p-2 text-red-500">No se pudo cargar el horario</td></tr>';
+        }
+    }
+
+    async function manejarClickCelda(e) {
+        e.stopPropagation();
+        const cell = e.currentTarget;
+        const dia = cell.dataset.dia;
+        const hora = cell.dataset.hora;
+        const materiaExistente = cell.dataset.materia;
+        const salonExistente = cell.dataset.salon;
+        const idExistente = cell.dataset.id;
+        const materias = await obtenerMateriasInscritas();
+        const selectMateria = document.getElementById('horario-materia');
+        selectMateria.innerHTML = '<option value="">Seleccionar materia</option>';
+        materias.forEach(m => {
+            selectMateria.innerHTML += `<option value="${escapeHtml(m.nombre)}">${escapeHtml(m.nombre)}</option>`;
+        });
+        if (materiaExistente) {
+            horarioEditandoId = idExistente;
+            document.getElementById('horario-dia').value = dia;
+            document.getElementById('horario-hora').value = hora;
+            document.getElementById('horario-materia').value = materiaExistente;
+            document.getElementById('horario-salon').value = salonExistente || '';
+            document.getElementById('modal-horario-title').innerText = 'Editar Clase';
+            document.getElementById('btn-eliminar-horario').classList.remove('hidden');
+        } else {
+            horarioEditandoId = null;
+            document.getElementById('horario-dia').value = dia;
+            document.getElementById('horario-hora').value = hora;
+            document.getElementById('horario-materia').value = '';
+            document.getElementById('horario-salon').value = '';
+            document.getElementById('modal-horario-title').innerText = 'Agregar Clase';
+            document.getElementById('btn-eliminar-horario').classList.add('hidden');
+        }
+        document.getElementById('modal-horario-alumno').classList.remove('hidden');
+    }
+
+    async function abrirModalNuevo() {
+        horarioEditandoId = null;
+        const materias = await obtenerMateriasInscritas();
+        const selectMateria = document.getElementById('horario-materia');
+        selectMateria.innerHTML = '<option value="">Seleccionar materia</option>';
+        materias.forEach(m => {
+            selectMateria.innerHTML += `<option value="${escapeHtml(m.nombre)}">${escapeHtml(m.nombre)}</option>`;
+        });
+        document.getElementById('horario-dia').value = '';
+        document.getElementById('horario-hora').value = '';
+        document.getElementById('horario-materia').value = '';
+        document.getElementById('horario-salon').value = '';
+        document.getElementById('modal-horario-title').innerText = 'Agregar Clase';
+        document.getElementById('btn-eliminar-horario').classList.add('hidden');
+        document.getElementById('modal-horario-alumno').classList.remove('hidden');
+    }
+
+    async function guardarHorario() {
+        const dia = document.getElementById('horario-dia').value;
+        const hora = document.getElementById('horario-hora').value.trim();
+        const materia = document.getElementById('horario-materia').value;
+        const salon = document.getElementById('horario-salon').value.trim();
+        if (!dia || !hora || !materia) {
+            alert('Complete día, hora y materia');
+            return;
+        }
+        const res = await fetch(`${API_ADMIN}/alumnos/${matricula}/horario-personal`);
+        let horarios = await res.json();
+        if (horarioEditandoId) {
+            const index = horarios.findIndex(h => h._id === horarioEditandoId);
+            if (index !== -1) {
+                horarios[index] = { dia, hora, materia, salon };
+            }
+        } else {
+            const existe = horarios.some(h => h.dia === dia && h.hora === hora);
+            if (existe) {
+                alert('Ya existe una clase en ese día y horario. Edita la existente.');
+                return;
+            }
+            horarios.push({ dia, hora, materia, salon });
+        }
+        const horariosSinId = horarios.map(({ _id, ...resto }) => resto);
+        const saveRes = await fetch(`${API_ADMIN}/alumnos/${matricula}/horario-personal`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ horarios: horariosSinId })
+        });
+        if (saveRes.ok) {
+            alert('Horario guardado');
+            document.getElementById('modal-horario-alumno').classList.add('hidden');
+            await cargarHorarioPersonal();
+        } else {
+            const error = await saveRes.json();
+            alert('Error al guardar horario: ' + (error.error || 'Intente de nuevo'));
+        }
+    }
+
+    async function eliminarClase() {
+        if (!horarioEditandoId) return;
+        if (confirm('¿Eliminar esta clase del horario?')) {
+            const res = await fetch(`${API_ADMIN}/alumnos/${matricula}/horario-personal`);
+            let horarios = await res.json();
+            const nuevos = horarios.filter(h => h._id !== horarioEditandoId);
+            const horariosSinId = nuevos.map(({ _id, ...resto }) => resto);
+            const saveRes = await fetch(`${API_ADMIN}/alumnos/${matricula}/horario-personal`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ horarios: horariosSinId })
+            });
+            if (saveRes.ok) {
+                alert('Clase eliminada');
+                document.getElementById('modal-horario-alumno').classList.add('hidden');
+                await cargarHorarioPersonal();
+            } else {
+                alert('Error al eliminar');
+            }
+        }
+    }
+
+    async function limpiarHorario() {
+        if (confirm('¿Eliminar TODAS las clases del horario?')) {
+            const saveRes = await fetch(`${API_ADMIN}/alumnos/${matricula}/horario-personal`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ horarios: [] })
+            });
+            if (saveRes.ok) {
+                alert('Horario limpiado correctamente');
+                await cargarHorarioPersonal();
+            } else {
+                alert('Error al limpiar el horario');
+            }
+        }
+    }
+
+    function cerrarModalHorario() {
+        document.getElementById('modal-horario-alumno').classList.add('hidden');
+    }
+
+    function iniciarEventosHorario() {
+        if (horarioEventosIniciados) return;
+        const btnAgregar = document.getElementById('btn-agregar-horario');
+        const btnGuardar = document.getElementById('btn-guardar-horario');
+        const btnCerrar = document.getElementById('btn-cerrar-modal-horario');
+        const btnLimpiar = document.getElementById('btn-limpiar-horario');
+        const btnEliminar = document.getElementById('btn-eliminar-horario');
+        if (btnAgregar) btnAgregar.addEventListener('click', abrirModalNuevo);
+        if (btnGuardar) btnGuardar.addEventListener('click', guardarHorario);
+        if (btnCerrar) btnCerrar.addEventListener('click', cerrarModalHorario);
+        if (btnLimpiar) btnLimpiar.addEventListener('click', limpiarHorario);
+        if (btnEliminar) btnEliminar.addEventListener('click', eliminarClase);
+        horarioEventosIniciados = true;
+    }
+
+    // ========== MATERIAS INSCRITAS ==========
+    async function cargarMateriasInscritas() {
+        try {
+            const res = await fetch(`${API_ADMIN}/alumnos/${alumnoId}/carga`);
+            const materias = await res.json();
+            const container = document.getElementById('lista-materias');
+            container.innerHTML = '';
+            if (materias.length === 0) {
+                container.innerHTML = '<p class="text-slate-500">No estás inscrito en ninguna materia.</p>';
+                return;
+            }
+            materias.forEach(m => {
+                const card = document.createElement('div');
+                card.className = 'bg-slate-50 p-3 rounded-lg shadow';
+                card.innerHTML = `<h4 class="font-bold">${escapeHtml(m.nombre)}</h4><p class="text-sm text-slate-600">Código: ${m.codigo || 'N/A'}</p>`;
+                container.appendChild(card);
+            });
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    // ========== CALIFICACIONES ==========
+    async function cargarCalificaciones() {
+        const container = document.getElementById('lista-calificaciones');
+        container.innerHTML = '<p class="text-slate-500">Cargando calificaciones...</p>';
+        try {
+            const res = await fetch(`${API_ADMIN}/docente/calificaciones?alumnoMatricula=${matricula}`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const califs = await res.json();
+            container.innerHTML = '';
+            if (califs.length === 0) {
+                container.innerHTML = '<p class="text-slate-500">No hay calificaciones registradas.</p>';
+                return;
+            }
+            const porMateria = {};
+            califs.forEach(c => {
+                if (!porMateria[c.materia]) porMateria[c.materia] = [];
+                porMateria[c.materia].push(c);
+            });
+            for (const [materia, notas] of Object.entries(porMateria)) {
+                const div = document.createElement('div');
+                div.className = 'bg-white p-4 rounded-xl shadow border';
+                let html = `<h4 class="font-bold text-lg">${escapeHtml(materia)}</h4><div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">`;
+                notas.forEach(n => {
+                    html += `<div class="bg-slate-100 p-2 rounded text-center"><span class="font-semibold">${n.tipo}:</span> ${n.calificacion}</div>`;
+                });
+                html += `</div>`;
+                div.innerHTML = html;
+                container.appendChild(div);
+            }
+        } catch (err) {
+            console.error(err);
+            container.innerHTML = '<p class="text-red-500">Error al cargar calificaciones. Verifica que el endpoint esté implementado.</p>';
+        }
+    }
+
+    // ========== MIS ENTREGAS ==========
+    async function cargarMisEntregas() {
+        const container = document.getElementById('lista-mis-entregas');
+        container.innerHTML = '<p class="text-slate-500">Cargando entregas...</p>';
+        try {
+            const res = await fetch(`${API_ESTUDIANTE}/entregas?matricula=${matricula}`);
+            const entregas = await res.json();
+            container.innerHTML = '';
+            if (entregas.length === 0) {
+                container.innerHTML = '<p class="text-slate-500">No has realizado entregas.</p>';
+                return;
+            }
+            entregas.forEach(e => {
+                const div = document.createElement('div');
+                div.className = 'bg-white p-2 rounded shadow mb-2';
+                div.innerHTML = `<strong>${escapeHtml(e.tareaTitulo)}</strong><br>
+                                 Entregado: ${new Date(e.fechaEntrega).toLocaleDateString()}<br>
+                                 Calificación: ${e.calificacion !== null ? e.calificacion : 'Pendiente'}<br>
+                                 Retroalimentación: ${escapeHtml(e.retroalimentacion || 'Sin retroalimentación')}`;
+                container.appendChild(div);
+            });
+        } catch (err) {
+            console.error(err);
+            container.innerHTML = '<p class="text-red-500">Error al cargar entregas</p>';
+        }
+    }
+
+    // ========== BOLETAS ==========
+    async function cargarBoletas() {
+        const container = document.getElementById('lista-boletas');
+        container.innerHTML = '<p class="text-slate-500">Cargando boletas...</p>';
+        try {
+            const res = await fetch(`${API_ADMIN}/boletas/alumno/${matricula}`);
+            if (!res.ok) throw new Error('Error al obtener boletas');
+            const boletas = await res.json();
+            container.innerHTML = '';
+            if (boletas.length === 0) {
+                container.innerHTML = '<p class="text-slate-500">No hay boletas disponibles. El administrador las subirá al final del periodo.</p>';
+                return;
+            }
+            boletas.forEach(b => {
+                const div = document.createElement('div');
+                div.className = 'bg-white p-3 rounded shadow mb-2 flex justify-between items-center';
+                div.innerHTML = `
+                    <div>
+                        <strong>Periodo: ${escapeHtml(b.periodo)}</strong><br>
+                        <span class="text-sm text-slate-500">Subida: ${new Date(b.fechaSubida).toLocaleDateString()}</span>
+                    </div>
+                    <a href="${b.urlArchivo}" target="_blank" class="bg-indigo-600 text-white px-3 py-1 rounded text-sm hover:bg-indigo-700">
+                        Ver PDF
+                    </a>
+                `;
+                container.appendChild(div);
+            });
+        } catch (err) {
+            console.error('Error cargando boletas:', err);
+            container.innerHTML = '<p class="text-red-500">Error al cargar boletas</p>';
+        }
+    }
+
+    // ========== SOLICITAR MATERIAS ==========
+    async function cargarSolicitudesPendientes() {
+        if (!alumnoId) return;
+        try {
+            const res = await fetch(`${API_ADMIN}/solicitudes?alumnoId=${alumnoId}&estado=pendiente`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const solicitudes = await res.json();
+            const container = document.getElementById('solicitudes-pendientes');
+            if (!container) return;
+            container.innerHTML = '';
+            if (solicitudes.length === 0) {
+                container.innerHTML = '<p class="text-slate-500">No tienes solicitudes pendientes.</p>';
+                return;
+            }
+            solicitudes.forEach(s => {
+                const div = document.createElement('div');
+                div.className = 'bg-yellow-50 p-3 rounded border-l-4 border-yellow-400';
+                div.innerHTML = `<p><strong>${escapeHtml(s.materiaNombre)}</strong></p><p class="text-sm text-slate-600">Solicitada el ${new Date(s.fecha).toLocaleDateString()} - Estado: <span class="font-semibold">Pendiente</span></p>`;
+                container.appendChild(div);
+            });
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    async function enviarSolicitud(materiaId) {
+        if (!alumnoId) return alert('No se encontró identificación del alumno');
+        try {
+            const res = await fetch(`${API_ADMIN}/solicitudes`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ alumnoId, materiaId })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                alert('Solicitud enviada. Espera la validación del administrador.');
+                await cargarMateriasDisponibles();
+                await cargarSolicitudesPendientes();
+            } else {
+                alert('Error: ' + (data.error || 'No se pudo enviar'));
+            }
+        } catch (err) {
+            alert('Error de conexión');
+        }
+    }
+
+    async function cargarMateriasDisponibles() {
+        const container = document.getElementById('materias-disponibles');
+        container.innerHTML = '<p class="text-slate-500">Cargando materias...</p>';
+        try {
+            const [resMaterias, resInscritas, resSolicitudes] = await Promise.all([
+                fetch(`${API_ADMIN}/materias`),
+                fetch(`${API_ADMIN}/alumnos/${alumnoId}/carga`),
+                fetch(`${API_ADMIN}/solicitudes?alumnoId=${alumnoId}&estado=pendiente`)
+            ]);
+            const todasMaterias = await resMaterias.json();
+            const inscritas = await resInscritas.json();
+            const solicitudes = await resSolicitudes.json();
+            const idsInscritas = inscritas.map(m => m._id);
+            const idsSolicitadas = solicitudes.map(s => s.materiaId);
+            const disponibles = todasMaterias.filter(m => !idsInscritas.includes(m._id) && !idsSolicitadas.includes(m._id));
+            container.innerHTML = '';
+            if (disponibles.length === 0) {
+                container.innerHTML = '<p class="text-slate-500">No hay materias disponibles para solicitar.</p>';
+                return;
+            }
+            disponibles.forEach(m => {
+                const div = document.createElement('div');
+                div.className = 'flex justify-between items-center bg-gray-50 p-3 rounded';
+                div.innerHTML = `
+                    <div><span class="font-bold">${escapeHtml(m.nombre)}</span> (${escapeHtml(m.codigo)})</div>
+                    <button class="btn-solicitar bg-indigo-600 text-white px-3 py-1 rounded" data-id="${m._id}">Solicitar</button>
+                `;
+                container.appendChild(div);
+            });
+            document.querySelectorAll('.btn-solicitar').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const materiaId = btn.dataset.id;
+                    await enviarSolicitud(materiaId);
+                });
+            });
+        } catch (err) {
+            console.error(err);
+            container.innerHTML = '<p class="text-red-500">Error al cargar materias</p>';
+        }
+    }
+
+    // ========== MIS CLASES Y MODAL ==========
+    let claseActualModalEst = null;
+
+    async function cargarClasesAlumno() {
+        const container = document.getElementById('lista-clases-alumno');
+        container.innerHTML = '<p class="text-slate-500">Cargando clases...</p>';
+        try {
+            const res = await fetch(`${API_ADMIN}/alumno/clases?matricula=${matricula}`);
+            const clases = await res.json();
+            container.innerHTML = '';
+            if (clases.length === 0) {
+                container.innerHTML = '<p class="text-slate-500">No estás inscrito en ninguna clase.</p>';
+                return;
+            }
+            clases.forEach(clase => {
+                const card = document.createElement('div');
+                card.className = 'bg-slate-50 p-4 rounded-xl shadow cursor-pointer hover:bg-slate-100';
+                card.innerHTML = `
+                    <h4 class="font-bold text-lg">${escapeHtml(clase.nombre)}</h4>
+                    <p class="text-sm text-slate-600">Materia: ${escapeHtml(clase.materia)}</p>
+                    <p class="text-sm text-slate-600">Grupo: ${escapeHtml(clase.grupoNombre || 'Sin grupo')}</p>
+                    <p class="text-sm text-slate-500">Docente: ${escapeHtml(clase.docenteMatricula)}</p>
+                `;
+                card.onclick = () => abrirModalClaseEst(clase._id, clase.nombre);
+                container.appendChild(card);
+            });
+        } catch (err) {
+            console.error('Error en cargarClasesAlumno:', err);
+            container.innerHTML = '<p class="text-red-500">Error al cargar clases</p>';
+        }
+    }
+
+    function mostrarSubTabEstModal(tabId) {
+        document.querySelectorAll('.subtab-content-est').forEach(c => c.classList.add('hidden'));
+        const targetDiv = document.getElementById(`modal-est-subtab-${tabId}`);
+        if (targetDiv) targetDiv.classList.remove('hidden');
+        document.querySelectorAll('.subtab-btn-est').forEach(btn => {
+            btn.classList.remove('bg-indigo-600', 'text-white');
+            btn.classList.add('bg-slate-200', 'text-slate-700');
+        });
+        const activeBtn = document.querySelector(`.subtab-btn-est[data-subtab-est="${tabId}"]`);
+        if (activeBtn) {
+            activeBtn.classList.add('bg-indigo-600', 'text-white');
+            activeBtn.classList.remove('bg-slate-200', 'text-slate-700');
+        }
+    }
+
+    async function abrirModalClaseEst(id, nombre) {
+        if (!id) {
+            console.error('ID de clase inválido:', id);
+            return;
+        }
+        claseActualModalEst = id;
+        document.getElementById('modal-est-clase-nombre').innerText = nombre;
+        document.getElementById('detalle-clase-modal-est').classList.remove('hidden');
+        try {
+            await Promise.all([
+                cargarComentariosEstModal(),
+                cargarTareasEstModal(),
+                cargarMaterialesEstModal()
+            ]);
+        } catch (err) {
+            console.error('Error cargando datos de la clase:', err);
+        }
+        mostrarSubTabEstModal('tablero');
+    }
+
+    function cerrarModalClaseEst() {
+        document.getElementById('detalle-clase-modal-est').classList.add('hidden');
+        claseActualModalEst = null;
+    }
+
+    document.getElementById('detalle-clase-modal-est').addEventListener('click', (e) => {
+        const btn = e.target.closest('.subtab-btn-est');
+        if (btn) {
+            const tabId = btn.getAttribute('data-subtab-est');
+            if (tabId) mostrarSubTabEstModal(tabId);
+        }
+    });
+
+    async function cargarComentariosEstModal() {
+        if (!claseActualModalEst) return;
+        try {
+            const res = await fetch(`${API_ADMIN}/clases/${claseActualModalEst}/comentarios`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const comentarios = await res.json();
+            const container = document.getElementById('modal-est-comentarios');
+            container.innerHTML = '';
+            comentarios.forEach(c => {
+                const div = document.createElement('div');
+                div.className = 'bg-slate-50 p-2 rounded';
+                div.innerHTML = `<p><strong>${escapeHtml(c.autorNombre)} (${c.autorRol})</strong> - ${new Date(c.fecha).toLocaleString()}</p><p>${escapeHtml(c.texto)}</p>`;
+                container.appendChild(div);
+            });
+        } catch (err) {
+            console.error('Error cargando comentarios:', err);
+            document.getElementById('modal-est-comentarios').innerHTML = '<p class="text-red-500">Error al cargar comentarios</p>';
+        }
+    }
+
+    document.getElementById('modal-est-btn-enviar-comentario')?.addEventListener('click', async () => {
+        const texto = document.getElementById('modal-est-nuevo-comentario').value.trim();
+        if (!texto || !claseActualModalEst) return;
+        try {
+            await fetch(`${API_ADMIN}/comentarios`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    claseId: claseActualModalEst,
+                    autorMatricula: matricula,
+                    autorNombre: usuario.nombre,
+                    autorRol: 'alumno',
+                    texto
+                })
+            });
+            document.getElementById('modal-est-nuevo-comentario').value = '';
+            cargarComentariosEstModal();
+        } catch (err) {
+            console.error(err);
+            alert('Error al enviar comentario');
+        }
+    });
+
+    async function cargarTareasEstModal() {
+        if (!claseActualModalEst) {
+            console.warn('No hay clase seleccionada');
+            return;
+        }
+        const container = document.getElementById('modal-est-lista-tareas');
+        container.innerHTML = '<p class="text-slate-500">Cargando tareas...</p>';
+        try {
+            const url = `${API_ADMIN}/clases/${claseActualModalEst}/tareas`;
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const tareas = await res.json();
+            container.innerHTML = '';
+            if (!tareas.length) {
+                container.innerHTML = '<p class="text-slate-500">No hay tareas asignadas.</p>';
+                return;
+            }
+            for (const t of tareas) {
+                let miEntrega = null;
+                try {
+                    const resEntrega = await fetch(`${API_ADMIN}/tareas/${t._id}/entregas`);
+                    if (resEntrega.ok) {
+                        const entregas = await resEntrega.json();
+                        if (Array.isArray(entregas)) {
+                            miEntrega = entregas.find(e => e.alumnoMatricula === matricula);
+                        }
+                    }
+                } catch (err) {
+                    console.warn(`Error al obtener entregas para tarea ${t._id}:`, err);
+                }
+                const entregado = !!miEntrega;
+                const calif = (miEntrega && miEntrega.calificacion !== null && miEntrega.calificacion !== undefined) ? miEntrega.calificacion : null;
+                const fechaEntregaStr = miEntrega && miEntrega.fechaEntrega ? new Date(miEntrega.fechaEntrega).toLocaleDateString() : '';
+                const retro = miEntrega && miEntrega.retroalimentacion ? escapeHtml(miEntrega.retroalimentacion) : '';
+                const div = document.createElement('div');
+                div.className = 'bg-gray-50 p-3 rounded shadow border-l-4 border-indigo-400';
+                div.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-bold">${escapeHtml(t.titulo)}</h4>
+                            <p class="text-sm text-slate-600">Entrega: ${new Date(t.fechaEntrega).toLocaleDateString()}</p>
+                            <p class="text-sm">${escapeHtml(t.descripcion)}</p>
+                            ${entregado ? `<p class="text-sm text-green-600 mt-1">✓ Entregado el ${fechaEntregaStr}</p>` : ''}
+                            ${calif !== null ? `<p class="text-sm font-bold text-blue-600">Calificación: ${calif}/100</p>` : ''}
+                            ${retro ? `<p class="text-sm text-slate-500">Retroalimentación: ${retro}</p>` : ''}
+                        </div>
+                        ${!entregado ? `<button class="btn-entregar-tarea bg-indigo-600 text-white px-2 py-1 rounded text-xs" data-id="${t._id}" data-titulo="${escapeHtml(t.titulo)}">Entregar</button>` : ''}
+                    </div>
+                `;
+                container.appendChild(div);
+            }
+            document.querySelectorAll('.btn-entregar-tarea').forEach(btn => {
+                btn.removeEventListener('click', entregaHandler);
+                btn.addEventListener('click', entregaHandler);
+            });
+        } catch (err) {
+            console.error('Error cargando tareas:', err);
+            container.innerHTML = `<p class="text-red-500">Error al cargar las tareas: ${err.message}</p>`;
+        }
+    }
+
+    function entregaHandler(e) {
+        const btn = e.currentTarget;
+        const tareaId = btn.dataset.id;
+        const titulo = btn.dataset.titulo;
+        abrirModalEntrega(tareaId, titulo);
+    }
+
+    function abrirModalEntrega(tareaId, titulo) {
+        document.getElementById('entregar-tarea-titulo').innerText = titulo;
+        document.getElementById('modal-entregar-tarea').dataset.tareaId = tareaId;
+        document.getElementById('modal-entregar-tarea').classList.remove('hidden');
+    }
+
+    document.getElementById('btn-entregar')?.addEventListener('click', async () => {
+        const tareaId = document.getElementById('modal-entregar-tarea').dataset.tareaId;
+        const comentario = document.getElementById('entrega-comentario').value;
+        const archivoInput = document.getElementById('entrega-archivo');
+        const formData = new FormData();
+        formData.append('tareaId', tareaId);
+        formData.append('alumnoMatricula', matricula);
+        formData.append('alumnoNombre', usuario.nombre);
+        formData.append('comentario', comentario);
+        const tareaTitulo = document.getElementById('entregar-tarea-titulo').innerText;
+        formData.append('tareaTitulo', tareaTitulo);
+        if (archivoInput.files[0]) formData.append('archivo', archivoInput.files[0]);
+        try {
+            const res = await fetch(`${API_ADMIN}/entregas`, { method: 'POST', body: formData });
+            if (res.ok) {
+                alert('Tarea entregada correctamente');
+                document.getElementById('modal-entregar-tarea').classList.add('hidden');
+                document.getElementById('entrega-comentario').value = '';
+                document.getElementById('entrega-archivo').value = '';
+                await cargarTareasEstModal();
+                if (!document.getElementById('tab-misentregas').classList.contains('hidden')) {
+                    await cargarMisEntregas();
+                }
+            } else {
+                const error = await res.json();
+                alert('Error al entregar: ' + (error.error || 'Intente de nuevo'));
+            }
+        } catch (err) {
+            alert('Error de conexión');
+        }
+    });
+
+    document.getElementById('btn-cerrar-entrega')?.addEventListener('click', () => {
+        document.getElementById('modal-entregar-tarea').classList.add('hidden');
+    });
+
+    async function cargarMaterialesEstModal() {
+        if (!claseActualModalEst) return;
+        try {
+            const res = await fetch(`${API_ADMIN}/docente/clases/${claseActualModalEst}`);
+            const data = await res.json();
+            const container = document.getElementById('modal-est-lista-materiales');
+            container.innerHTML = '';
+            if (data.materiales && data.materiales.length) {
+                data.materiales.forEach(m => {
+                    const div = document.createElement('div');
+                    div.className = 'bg-slate-50 p-2 rounded';
+                    div.innerHTML = `<a href="${m.url}" target="_blank" class="text-blue-600">${escapeHtml(m.titulo)}</a> (${m.tipo})`;
+                    container.appendChild(div);
+                });
+            } else {
+                container.innerHTML = '<p class="text-slate-500">No hay materiales disponibles.</p>';
+            }
+        } catch (err) {
+            console.error('Error cargando materiales:', err);
+            document.getElementById('modal-est-lista-materiales').innerHTML = '<p class="text-red-500">Error al cargar materiales</p>';
+        }
+    }
+
+    document.getElementById('cerrar-modal-est-clase')?.addEventListener('click', cerrarModalClaseEst);
+
+    // ========== PESTAÑAS PRINCIPALES ==========
+    function initTabs() {
+        const tabs = document.querySelectorAll('.tab-estudiante-btn');
+        const contents = document.querySelectorAll('.tab-content');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const target = tab.getAttribute('data-tab');
+                contents.forEach(c => c.classList.add('hidden'));
+                const targetDiv = document.getElementById(`tab-${target}`);
+                if (targetDiv) targetDiv.classList.remove('hidden');
+                tabs.forEach(t => t.classList.remove('bg-indigo-600', 'text-white'));
+                tab.classList.add('bg-indigo-600', 'text-white');
+                if (target === 'perfil') cargarPerfil();
+                if (target === 'materias') cargarMateriasInscritas();
+                if (target === 'horario') cargarHorarioPersonal(); // no llamar a iniciarEventosHorario aquí
+                if (target === 'solicitudes') {
+                    cargarMateriasDisponibles();
+                    cargarSolicitudesPendientes();
+                }
+                if (target === 'clases') cargarClasesAlumno();
+                if (target === 'misentregas') cargarMisEntregas();
+                if (target === 'boletas') cargarBoletas();
+            });
+        });
+        cargarPerfil(); // carga inicial
+    }
+
+    document.getElementById('logout').addEventListener('click', () => {
+        sessionStorage.removeItem('usuario');
+        window.location.href = './Sistema_Gestion_Escolar.html';
+    });
+
+    // INICIALIZACIÓN ÚNICA
+    iniciarEventosHorario();  // una sola vez al cargar la página
+    initTabs();
+</script>
+</body>
+</html>
