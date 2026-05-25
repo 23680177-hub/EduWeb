@@ -7,7 +7,7 @@ const router = express.Router();
 
 // Modelos existentes
 const Docente = require('../models/Docente');
-const Asignacion = require('../models/Asignacion');
+const Asignacion = require('../models/asignacion');
 const HorarioDocente = require('../models/HorarioDocente');
 const Alumno = require('../models/Alumno');
 const AsistenciaDocente = require('../models/AsistenciaDocente');
