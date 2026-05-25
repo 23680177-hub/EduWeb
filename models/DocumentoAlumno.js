@@ -9,4 +9,4 @@ const documentoAlumnoSchema = new mongoose.Schema({
   fecha: { type: Date, default: Date.now }
 }, { collection: 'Documentos-Alumno' });
 
-module.exports = estudianteConn.model('DocumentoAlumno', documentoAlumnoSchema);
+module.exports = mongoose.model('DocumentoAlumno', documentoAlumnoSchema);
