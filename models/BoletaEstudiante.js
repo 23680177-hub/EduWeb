@@ -12,4 +12,4 @@ const boletaSchema = new mongoose.Schema({
   fecha: { type: Date, default: Date.now }
 }, { collection: 'Boletas' });
 
-module.exports = estudianteConn.model('BoletaEstudiante', boletaSchema);
+module.exports = mongoose.model('BoletaEstudiante', boletaSchema);
