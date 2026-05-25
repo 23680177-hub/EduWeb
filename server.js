@@ -6,7 +6,6 @@ const cors = require('cors');
 const path = require('path');
 
 // Importar rutas
-require('./db/connections'); // Si este archivo existe y no causa conflictos, se mantiene
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/adminRoutes');
 const docenteRoutes = require('./routes/docenteRoutes');
