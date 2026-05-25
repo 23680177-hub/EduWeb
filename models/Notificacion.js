@@ -9,4 +9,4 @@ const notificacionSchema = new mongoose.Schema({
   fecha: { type: Date, default: Date.now }
 }, { collection: 'Notificaciones' });
 
-module.exports = estudianteConn.model('Notificacion', notificacionSchema);
+module.exports = mongoose.model('Notificacion', notificacionSchema);
