@@ -214,7 +214,18 @@ router.get('/alumnos/:id/carga', async (req, res) => {
     const alumno = await Alumno.findById(req.params.id).populate('cargaAcademica');
     res.json(alumno.cargaAcademica || []);
 });
-
+// ========== CARRERAS (para selects) ==========
+router.get('/carreras', async (req, res) => {
+    try {
+        // Obtener carreras únicas de los alumnos
+        const carreras = await Alumno.distinct('carrera');
+        // Filtrar valores nulos o vacíos
+        const lista = carreras.filter(c => c && c.trim() !== '');
+        res.json(lista);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 // ========== GRUPOS ==========
 const storageHorario = multer.diskStorage({
     destination: (req, file, cb) => {
