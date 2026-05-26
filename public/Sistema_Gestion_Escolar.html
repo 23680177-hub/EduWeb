@@ -490,7 +490,12 @@ const API_ADMIN = '/api/admin';
                 <div><label class="block text-sm font-semibold mb-1 text-slate-700">Nombre de usuario</label><div class="flex gap-2 items-center"><input type="text" id="reg-username" class="input-field flex-1" readonly style="background:#f1f5f9"><button type="button" id="suggest-username-btn" class="suggest-btn">Sugerir otro</button></div></div>
                 <div><label class="block text-sm font-semibold mb-1 text-slate-700">Matrícula (automática)</label><input type="text" id="reg-matricula" class="input-field" readonly style="background:#f1f5f9"></div>
                 <div><label class="block text-sm font-semibold mb-1 text-slate-700">Correo institucional</label><input type="email" id="reg-email" class="input-field" readonly style="background:#f1f5f9"></div>
-            `;
+                 <div><label class="block text-sm font-semibold mb-1 text-slate-700">Carrera</label>
+        <select id="reg-carrera" class="input-field"></select></div>
+        <div><label class="block text-sm font-semibold mb-1 text-slate-700">Facultad (opcional)</label>
+        <input type="text" id="reg-facultad" class="input-field" placeholder="Ej: Ingeniería"></div>
+                `;
+                cargarCarrerasEnSelect();
             const nombreInput = document.getElementById('reg-nombre');
             if (nombreInput && nombreInput.value) actualizarCamposEstudiante();
         } else if(currentRegRole === 'docente') {
@@ -514,19 +519,24 @@ const API_ADMIN = '/api/admin';
     }
 
     async function handleRegister(e) {
+        
         e.preventDefault();
         const nombre = document.getElementById('reg-nombre')?.value.trim();
         const username = document.getElementById('reg-username')?.value.trim();
         let password = document.getElementById('reg-password').value;
         let matricula = null, email = null;
         if(currentRegRole !== 'administrador') matricula = document.getElementById('reg-matricula')?.value.trim();
-        if(currentRegRole === 'alumno') email = document.getElementById('reg-email')?.value.trim();
+        let carrera = null, facultad = null;
+        if(currentRegRole === 'alumno'){
+            email = document.getElementById('reg-email')?.value.trim();
+            carrera = document.getElementById('reg-carrera')?.value || '';
+    facultad = document.getElementById('reg-facultad')?.value || ''; }
         if(!nombre || !username || !password) return alert("Completa todos los campos.");
         if(!validarUsername(username)) return alert("Usuario: 4 mayúsculas + 2 números (ej: JMRB03)");
         if(currentRegRole !== 'administrador' && !validarMatriculaNumerica(matricula)) return alert("Matrícula solo números.");
         if(currentRegRole === 'alumno' && (!email || !validarCorreoEscuela(email))) return alert("Correo: numeros@eduweb.mx");
         if(!validarPassword(password)) return alert("Contraseña: máx 8 caracteres, número y símbolo");
-        const payload = { rol: currentRegRole, nombre, username, matricula, email, password };
+         const payload = { rol: currentRegRole, nombre, username, matricula, email, password, carrera, facultad };
         try {
             const res = await fetch(`${API_AUTH}/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             const data = await res.json();
@@ -537,7 +547,24 @@ const API_ADMIN = '/api/admin';
             } else alert("❌ Error: " + (data.error || "No se pudo registrar"));
         } catch(err) { alert("Error de conexión con el servidor."); }
     }
-
+async function cargarCarrerasEnSelect() {
+    try {
+        const res = await fetch(`${API_ADMIN}/carreras`);
+        if (res.ok) {
+            const carreras = await res.json();
+            const select = document.getElementById('reg-carrera');
+            if (select) {
+                select.innerHTML = '<option value="">Seleccionar carrera</option>';
+                carreras.forEach(c => {
+                    select.innerHTML += `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`;
+                });
+            }
+        }
+    } catch (err) {
+        console.error('Error cargando carreras:', err);
+    }
+}
+    
     async function handleLogin(e) {
         e.preventDefault();
         const rol = document.getElementById('login-rol').value;
