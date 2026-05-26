@@ -216,8 +216,8 @@ router.get('/alumnos/:id/carga', async (req, res) => {
     res.json(alumno.cargaAcademica || []);
 });
 // ========== CARRERAS (para selects) ==========
-router.get('/carreras', async (req, res) => {
-    const carreras = await Carrera.find({ activo: true });
+router.get('/carrera', async (req, res) => {
+    const carrera = await Carrera.find({ activo: true });
     res.json(carreras.map(c => c.nombre));
 });
 // ========== GRUPOS ==========
