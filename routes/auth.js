@@ -25,7 +25,19 @@ router.post('/register', async (req, res) => {
         if (rol === 'administrador') {
             existe = await Model.findOne({ username });
         } else if (rol === 'alumno') {
+             const nuevoAlumno = new Alumno({
+        nombre,
+        matricula,
+        email,
+        username,
+        password: hashed,
+        carrera: carrera || '',
+        facultad: facultad || '',
+                 grupoActual: grupoId || null,   // si el alumno tiene grupo asignado
+            estado: 'activo'
             existe = await Model.findOne({ $or: [{ matricula }, { email }, { username }] });
+            await nuevoAlumno.save();
+}
         } else { // docente
             existe = await Model.findOne({ $or: [{ matricula }, { username }] });
         }
