@@ -470,28 +470,32 @@ document.getElementById('ultima-asistencia').innerHTML = `Última asistencia: En
         const res = await fetch(`${API_ADMIN}/docente/asistencia/${matricula}`);
         const asistencias = await res.json();
         const container = document.getElementById('historial-asistencia');
-container.innerHTML = asistencias.map(a => `<div>${new Date(a.fecha).toLocaleDateString('es-MX')}: Entrada ${formatearHoraLocal(a.entrada)} | Salida ${formatearHoraLocal(a.salida)}</div>`).join('');
+        container.innerHTML = asistencias.map(a => `<div>${new Date(a.fecha).toLocaleDateString('es-MX')}: Entrada ${formatearHoraLocal(a.entrada)} | Salida ${formatearHoraLocal(a.salida)}</div>`).join('');
     }
+    // Manejadores con nombre para evitar duplicación
+function manejarEntrada() { marcarAsistencia('entrada'); }
+function manejarSalida() { marcarAsistencia('salida'); }
+function manejarHistorial() { verHistorialAsistencia(); }
+    
+    //Eventos para los botones
+    let asistenciaEventosIniciados = false;
 function iniciarEventosAsistencia() {
+    if (asistenciaEventosIniciados) return; 
     const btnEntrada = document.getElementById('marcar-entrada');
     const btnSalida = document.getElementById('marcar-salida');
     const btnHistorial = document.getElementById('ver-historial-asistencia');
 
     if (btnEntrada) {
-        btnEntrada.removeEventListener('click', () => marcarAsistencia('entrada'));
-        btnEntrada.addEventListener('click', () => marcarAsistencia('entrada'));
-        console.log('Evento entrada asignado');
+        btnEntrada.addEventListener('click', manejarEntrada);
     }
     if (btnSalida) {
-        btnSalida.removeEventListener('click', () => marcarAsistencia('salida'));
-        btnSalida.addEventListener('click', () => marcarAsistencia('salida'));
-        console.log('Evento salida asignado');
+        btnSalida.addEventListener('click', manejarSalida);
     }
     if (btnHistorial) {
-        btnHistorial.removeEventListener('click', verHistorialAsistencia);
-        btnHistorial.addEventListener('click', verHistorialAsistencia);
-        console.log('Evento historial asignado');
+        btnHistorial.addEventListener('click', manejarHistorial);
     }
+     asistenciaEventosIniciados = true;
+    console.log('Eventos de asistencia asignados una sola vez');
 }
     // ========== CALIFICACIONES ==========
     async function cargarMateriasGruposCalificaciones() {
