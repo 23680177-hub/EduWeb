@@ -439,6 +439,13 @@
     }
 
     // ========== ASISTENCIA ==========
+    // Función para formatear hora local a partir de una fecha UTC
+function formatearHoraLocal(fechaUTC) {
+    if (!fechaUTC) return '--';
+    const fecha = new Date(fechaUTC);
+    // Opción: mostrar hora en formato 12h con AM/PM
+    return fecha.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+}
     async function marcarAsistencia(tipo) {
         const docenteMatricula = matricula;
     const res = await fetch(`${API_ADMIN}/docente/asistencia`, {
@@ -456,14 +463,14 @@
         const asistencias = await res.json();
         if (asistencias.length) {
             const ultima = asistencias[0];
-            document.getElementById('ultima-asistencia').innerHTML = `Última asistencia: Entrada ${ultima.entrada ? new Date(ultima.entrada).toLocaleTimeString() : '--'} | Salida ${ultima.salida ? new Date(ultima.salida).toLocaleTimeString() : '--'}`;
+document.getElementById('ultima-asistencia').innerHTML = `Última asistencia: Entrada ${ultima.entrada ? formatearHoraLocal(ultima.entrada) : '--'} | Salida ${ultima.salida ? formatearHoraLocal(ultima.salida) : '--'}`;
         }
     }
     async function verHistorialAsistencia() {
         const res = await fetch(`${API_ADMIN}/docente/asistencia/${matricula}`);
         const asistencias = await res.json();
         const container = document.getElementById('historial-asistencia');
-        container.innerHTML = asistencias.map(a => `<div class="bg-white p-2 rounded shadow mb-1">${new Date(a.fecha).toLocaleDateString()}: Entrada ${a.entrada ? new Date(a.entrada).toLocaleTimeString() : '--'} | Salida ${a.salida ? new Date(a.salida).toLocaleTimeString() : '--'}</div>`).join('');
+container.innerHTML = asistencias.map(a => `<div>${new Date(a.fecha).toLocaleDateString('es-MX')}: Entrada ${formatearHoraLocal(a.entrada)} | Salida ${formatearHoraLocal(a.salida)}</div>`).join('');
     }
 function iniciarEventosAsistencia() {
     const btnEntrada = document.getElementById('marcar-entrada');
