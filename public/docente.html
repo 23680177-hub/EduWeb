@@ -465,7 +465,27 @@
         const container = document.getElementById('historial-asistencia');
         container.innerHTML = asistencias.map(a => `<div class="bg-white p-2 rounded shadow mb-1">${new Date(a.fecha).toLocaleDateString()}: Entrada ${a.entrada ? new Date(a.entrada).toLocaleTimeString() : '--'} | Salida ${a.salida ? new Date(a.salida).toLocaleTimeString() : '--'}</div>`).join('');
     }
+function iniciarEventosAsistencia() {
+    const btnEntrada = document.getElementById('marcar-entrada');
+    const btnSalida = document.getElementById('marcar-salida');
+    const btnHistorial = document.getElementById('ver-historial-asistencia');
 
+    if (btnEntrada) {
+        btnEntrada.removeEventListener('click', () => marcarAsistencia('entrada'));
+        btnEntrada.addEventListener('click', () => marcarAsistencia('entrada'));
+        console.log('Evento entrada asignado');
+    }
+    if (btnSalida) {
+        btnSalida.removeEventListener('click', () => marcarAsistencia('salida'));
+        btnSalida.addEventListener('click', () => marcarAsistencia('salida'));
+        console.log('Evento salida asignado');
+    }
+    if (btnHistorial) {
+        btnHistorial.removeEventListener('click', verHistorialAsistencia);
+        btnHistorial.addEventListener('click', verHistorialAsistencia);
+        console.log('Evento historial asignado');
+    }
+}
     // ========== CALIFICACIONES ==========
     async function cargarMateriasGruposCalificaciones() {
         const resMaterias = await fetch(`${API_ADMIN}/materias`);
@@ -885,7 +905,7 @@
                 if (target === 'materias') cargarAsignaciones();
                 if (target === 'horario') { cargarHorario(); cargarOpcionesHorario(); }
                 if (target === 'perfil') cargarPerfil();
-                if (target === 'asistencia') cargarUltimaAsistencia();
+                if (target === 'asistencia') cargarUltimaAsistencia();   iniciarEventosAsistencia();
                 if (target === 'calificaciones') cargarMateriasGruposCalificaciones();
                 if (target === 'planificacion') { cargarMateriasGruposPlanificacion(); cargarListaClases(); }
             });
@@ -897,6 +917,7 @@
         window.location.href = './Sistema_Gestion_Escolar.html';
     });
     initTabs();
+    iniciarEventosAsistencia();
 </script>
 </body>
 </html>
