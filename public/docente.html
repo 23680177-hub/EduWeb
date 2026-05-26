@@ -440,11 +440,17 @@
 
     // ========== ASISTENCIA ==========
     async function marcarAsistencia(tipo) {
-        const res = await fetch(`${API_ADMIN}/docente/asistencia`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ docenteMatricula: matricula, tipo }) });
-        const data = await res.json();
-        alert(`${tipo === 'entrada' ? 'Entrada' : 'Salida'} registrada a las ${data.hora}`);
-        cargarUltimaAsistencia();
+        const docenteMatricula = matricula;
+    const res = await fetch(`${API_ADMIN}/docente/asistencia`, {
+    method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ docenteMatricula, tipo })
+    });
+  const data = await res.json();
+   if (res.ok) alert(`${tipo === 'entrada' ? 'Entrada' : 'Salida'} registrada a las ${data.hora}`);
+   else alert('Error: ' + data.error);
     }
+        
     async function cargarUltimaAsistencia() {
         const res = await fetch(`${API_ADMIN}/docente/asistencia/${matricula}`);
         const asistencias = await res.json();
