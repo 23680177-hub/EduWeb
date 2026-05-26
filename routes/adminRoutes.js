@@ -58,6 +58,8 @@ router.delete('/materias/:id', async (req, res) => {
     await Materia.findByIdAndDelete(req.params.id);
     res.json({ mensaje: 'Eliminada' });
 });
+
+// ========== SOLICITUDES ==========
 router.post('/solicitudes', async (req, res) => {
     try {
         const { alumnoId, materiaId } = req.body;
@@ -86,7 +88,6 @@ router.post('/solicitudes', async (req, res) => {
     }
 });
 
-// ========== SOLICITUDES ==========
 router.get('/solicitudes', async (req, res) => {
     try {
         const { estado, matricula, alumnoId } = req.query;
@@ -101,6 +102,7 @@ router.get('/solicitudes', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 router.put('/solicitudes/:id/aprobar', async (req, res) => {
     try {
         const solicitud = await Solicitud.findById(req.params.id);
@@ -115,6 +117,7 @@ router.put('/solicitudes/:id/aprobar', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 router.put('/solicitudes/:id/rechazar', async (req, res) => {
     try {
         await Solicitud.findByIdAndUpdate(req.params.id, { estado: 'rechazada' });
@@ -123,6 +126,7 @@ router.put('/solicitudes/:id/rechazar', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 router.get('/alumnos/:id/limite', async (req, res) => {
     try {
         const alumno = await Alumno.findById(req.params.id).populate('cargaAcademica materiasReprobadas');
@@ -155,6 +159,7 @@ router.get('/alumnos', async (req, res) => {
     const alumnos = await Alumno.find(filtro).populate('grupoActual');
     res.json(alumnos);
 });
+
 router.post('/alumnos', async (req, res) => {
     let { nombre, matricula, email, username, password, carrera, facultad, grupoActual } = req.body;
     grupoActual = normalizeGrupoActual(grupoActual);
@@ -165,6 +170,7 @@ router.post('/alumnos', async (req, res) => {
     await nuevo.save();
     res.status(201).json(nuevo);
 });
+
 router.put('/alumnos/:id', async (req, res) => {
     let updates = req.body;
     delete updates.password;
@@ -174,10 +180,12 @@ router.put('/alumnos/:id', async (req, res) => {
     const alumno = await Alumno.findByIdAndUpdate(req.params.id, updates, { returnDocument: 'after' });
     res.json(alumno);
 });
+
 router.delete('/alumnos/:id', async (req, res) => {
     await Alumno.findByIdAndDelete(req.params.id);
     res.json({ mensaje: 'Eliminado' });
 });
+
 router.get('/alumnos/:id', async (req, res) => {
     try {
         const alumno = await Alumno.findById(req.params.id).select('-password').populate('grupoActual');
@@ -187,6 +195,7 @@ router.get('/alumnos/:id', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 router.patch('/alumnos/:id/pago', async (req, res) => {
     try {
         const { estadoPago } = req.body;
@@ -204,19 +213,22 @@ router.patch('/alumnos/:id/pago', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 router.post('/alumnos/:id/inscripcion', async (req, res) => {
     const { tipo, periodo, grupoId, observaciones } = req.body;
     if (grupoId) await Alumno.findByIdAndUpdate(req.params.id, { grupoActual: normalizeGrupoActual(grupoId) });
     res.json({ mensaje: 'Registrado' });
 });
+
 router.get('/alumnos/:id/documentos', async (req, res) => { res.json([]); });
 router.post('/alumnos/:id/documentos', async (req, res) => { res.json({ mensaje: 'Documento subido' }); });
 router.get('/alumnos/:id/carga', async (req, res) => {
     const alumno = await Alumno.findById(req.params.id).populate('cargaAcademica');
     res.json(alumno.cargaAcademica || []);
 });
-// ========== CARRERAS (para selects) ==========
-router.get('/carrera', async (req, res) => {
+
+// ========== CARRERAS ==========
+router.get('/carreras', async (req, res) => {
     try {
         const carreras = await Carrera.find({ activo: true });
         res.json(carreras.map(c => c.nombre));
@@ -224,6 +236,7 @@ router.get('/carrera', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 // ========== GRUPOS ==========
 const storageHorario = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -251,6 +264,7 @@ router.post('/grupos/:id/horario', uploadHorario.single('horario'), async (req, 
         res.status(500).json({ error: err.message });
     }
 });
+
 router.patch('/grupos/:id/estado', async (req, res) => {
     try {
         const { estado } = req.body;
@@ -261,23 +275,28 @@ router.patch('/grupos/:id/estado', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 router.get('/grupos', async (req, res) => {
     const grupos = await Grupo.find();
     res.json(grupos);
 });
+
 router.post('/grupos', async (req, res) => {
     const grupo = new Grupo(req.body);
     await grupo.save();
     res.json(grupo);
 });
+
 router.put('/grupos/:id', async (req, res) => {
     const grupo = await Grupo.findByIdAndUpdate(req.params.id, req.body, { returnDocument: 'after' });
     res.json(grupo);
 });
+
 router.delete('/grupos/:id', async (req, res) => {
     await Grupo.findByIdAndDelete(req.params.id);
     res.json({ mensaje: 'Eliminado' });
 });
+
 router.get('/grupos/:id', async (req, res) => {
     try {
         const grupo = await Grupo.findById(req.params.id);
@@ -287,6 +306,7 @@ router.get('/grupos/:id', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 router.get('/grupos/:id/estudiantes', async (req, res) => {
     try {
         const estudiantes = await Alumno.find({ grupoActual: req.params.id }).select('-password');
@@ -295,6 +315,7 @@ router.get('/grupos/:id/estudiantes', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 router.post('/grupos/:id/estudiantes', async (req, res) => {
     try {
         const { estudianteIds } = req.body;
@@ -312,6 +333,7 @@ router.post('/grupos/:id/estudiantes', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 router.delete('/grupos/:id/estudiantes/:estudianteId', async (req, res) => {
     try {
         const estudiante = await Alumno.findById(req.params.estudianteId);
@@ -336,6 +358,7 @@ router.get('/clases/:id/tareas', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 router.post('/tareas', async (req, res) => {
     try {
         const { claseId, titulo, descripcion, fechaEntrega } = req.body;
@@ -346,6 +369,7 @@ router.post('/tareas', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 router.put('/tareas/:id', async (req, res) => {
     try {
         const { titulo, descripcion, fechaEntrega } = req.body;
@@ -355,6 +379,7 @@ router.put('/tareas/:id', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 router.delete('/tareas/:id', async (req, res) => {
     try {
         await Tarea.findByIdAndDelete(req.params.id);
@@ -373,6 +398,7 @@ router.get('/clases/:id/comentarios', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 router.post('/comentarios', async (req, res) => {
     try {
         const { claseId, autorMatricula, autorNombre, autorRol, texto } = req.body;
@@ -393,6 +419,7 @@ router.get('/clases/:id/materiales', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 router.post('/docente/materiales', async (req, res) => {
     try {
         const { claseId, titulo, tipo, enlace, descripcion } = req.body;
@@ -413,6 +440,7 @@ router.get('/tareas/:id/entregas', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 router.post('/entregas', uploadHorario.single('archivo'), async (req, res) => {
     try {
         const { tareaId, alumnoMatricula, alumnoNombre, comentario, tareaTitulo } = req.body;
@@ -435,6 +463,7 @@ router.post('/entregas', uploadHorario.single('archivo'), async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 router.put('/entregas/:id', async (req, res) => {
     try {
         const { calificacion, retroalimentacion } = req.body;
@@ -450,6 +479,7 @@ router.get('/conceptos', async (req, res) => {
     const conceptos = await ConceptoPago.find();
     res.json(conceptos);
 });
+
 router.post('/conceptos', async (req, res) => {
     const { agregar, conceptos } = req.body;
     if (agregar) {
@@ -461,6 +491,7 @@ router.post('/conceptos', async (req, res) => {
     }
     res.json({ mensaje: 'ok' });
 });
+
 router.delete('/conceptos/:id', async (req, res) => {
     await ConceptoPago.findByIdAndDelete(req.params.id);
     res.json({ mensaje: 'eliminado' });
@@ -475,6 +506,7 @@ router.get('/pagos', async (req, res) => {
     const pagosConFecha = pagos.map(p => ({ ...p.toObject(), fecha: p.fechaPago }));
     res.json(pagosConFecha);
 });
+
 router.post('/pagos', async (req, res) => {
     try {
         let { alumnoMatricula, alumnoId, concepto, monto, fechaPago } = req.body;
@@ -490,6 +522,7 @@ router.post('/pagos', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 router.get('/pagos/pendientes/:matricula', async (req, res) => { res.json([]); });
 
 // ========== REPORTES ==========
@@ -499,6 +532,7 @@ router.get('/reportes/graficos', async (req, res) => {
         morosidadCarreras: { labels: ['Computación','Civil'], values: [15,8] }
     });
 });
+
 router.get('/reportes/alumnos', async (req, res) => {
     const { matricula, nombre, carrera } = req.query;
     let filtro = {};
@@ -515,10 +549,12 @@ router.get('/reportes/alumnos', async (req, res) => {
     }));
     res.json(resultado);
 });
+
 router.get('/reportes/estudiantes', async (req, res) => {
     const alumnos = await Alumno.find().populate('grupoActual');
     res.json(alumnos);
 });
+
 router.get('/reportes/ingresos-mensuales', async (req, res) => {
     try {
         const pipeline = [
@@ -536,6 +572,7 @@ router.get('/reportes/ingresos-mensuales', async (req, res) => {
         res.status(500).json({ error: 'Error al calcular los ingresos mensuales' });
     }
 });
+
 router.get('/reportes/morosidad-carreras', async (req, res) => {
     try {
         const pipeline = [
@@ -558,6 +595,7 @@ router.get('/docentes', async (req, res) => {
     const docentes = await Docente.find();
     res.json(docentes);
 });
+
 router.post('/docentes/asignar', async (req, res) => {
     try {
         const { docenteIdentificador, materia, grupoId } = req.body;
@@ -565,7 +603,16 @@ router.post('/docentes/asignar', async (req, res) => {
         if (!docente) return res.status(404).json({ error: 'Docente no encontrado' });
         const grupo = await Grupo.findById(grupoId);
         if (!grupo) return res.status(404).json({ error: 'Grupo no encontrado' });
-        const asignacion = new Asignacion({ docenteId: docente._id, docenteMatricula: docente.matricula, docenteNombre: docente.nombre, materia, grupoId: grupo._id, grupoNombre: grupo.nombre, grupo: grupo.nombre, fecha: new Date() });
+        const asignacion = new Asignacion({
+            docenteId: docente._id,
+            docenteMatricula: docente.matricula,
+            docenteNombre: docente.nombre,
+            materia,
+            grupoId: grupo._id,
+            grupoNombre: grupo.nombre,
+            grupo: grupo.nombre,
+            fecha: new Date()
+        });
         await asignacion.save();
         res.json({ mensaje: 'Asignación guardada' });
     } catch (err) {
@@ -573,19 +620,27 @@ router.post('/docentes/asignar', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 router.post('/docentes/subir-lista', async (req, res) => { res.json({ mensaje: 'Lista subida' }); });
+
 router.post('/docentes/asistencia', async (req, res) => {
     try {
         const { docenteMatricula, tipo } = req.body;
         const docente = await Docente.findOne({ matricula: docenteMatricula });
         if (!docente) return res.status(404).json({ error: 'Docente no encontrado' });
-        const asistencia = new AsistenciaDocente({ docenteId: docente._id, docenteMatricula, tipo, fecha: new Date() });
+        const asistencia = new AsistenciaDocente({
+            docenteId: docente._id,
+            docenteMatricula,
+            tipo,
+            fecha: new Date()
+        });
         await asistencia.save();
         res.json({ mensaje: `${tipo} registrada`, hora: new Date().toLocaleTimeString() });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
+
 router.get('/docentes/asistencias/:docenteMatricula', async (req, res) => {
     try {
         const asistencias = await AsistenciaDocente.find({ docenteMatricula: req.params.docenteMatricula }).sort({ fecha: -1 });
@@ -594,6 +649,7 @@ router.get('/docentes/asistencias/:docenteMatricula', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 router.post('/docentes/horarios', async (req, res) => {
     try {
         const { docenteMatricula, materia, grupoId, horarios } = req.body;
@@ -609,6 +665,7 @@ router.post('/docentes/horarios', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 router.get('/docentes/asignaciones', async (req, res) => {
     try {
         const asignaciones = await Asignacion.find().sort({ fecha: -1 });
@@ -629,6 +686,7 @@ router.get('/docente/clases', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 router.post('/docente/clases', async (req, res) => {
     try {
         const { docenteMatricula, materia, grupoId, nombre, descripcion, limiteEstudiantes } = req.body;
@@ -647,6 +705,7 @@ router.post('/docente/clases', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 router.delete('/docente/clases/:id', async (req, res) => {
     try {
         const claseId = req.params.id;
@@ -667,6 +726,7 @@ router.delete('/docente/clases/:id', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 router.post('/docente/clases/:id/agregar-alumno', async (req, res) => {
     try {
         const claseId = req.params.id;
@@ -687,6 +747,7 @@ router.post('/docente/clases/:id/agregar-alumno', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 router.get('/alumno/clases', async (req, res) => {
     const { matricula } = req.query;
     if (!matricula) return res.status(400).json({ error: 'Matrícula requerida' });
@@ -708,6 +769,7 @@ router.get('/alumno/clases', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 router.get('/docente/clases/:id', async (req, res) => {
     try {
         const clase = await Clase.findById(req.params.id);
@@ -729,6 +791,7 @@ router.get('/alumnos/:matricula/horario-personal', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 router.post('/alumnos/:matricula/horario-personal', async (req, res) => {
     try {
         const { matricula } = req.params;
@@ -736,7 +799,6 @@ router.post('/alumnos/:matricula/horario-personal', async (req, res) => {
         if (!Array.isArray(horarios)) {
             return res.status(400).json({ error: 'Se requiere un array de horarios' });
         }
-        // Validar campos
         for (const h of horarios) {
             if (!h.dia || !h.hora || !h.materia) {
                 return res.status(400).json({ error: 'Cada horario debe tener día, hora y materia' });
@@ -753,6 +815,7 @@ router.post('/alumnos/:matricula/horario-personal', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 router.delete('/alumnos/:matricula/horario-personal/:id', async (req, res) => {
     try {
         await HorarioAlumno.findByIdAndDelete(req.params.id);
@@ -793,6 +856,7 @@ router.post('/boletas/subir', uploadBoleta.single('archivo'), async (req, res) =
         res.status(500).json({ error: err.message });
     }
 });
+
 router.get('/boletas/alumno/:matricula', async (req, res) => {
     try {
         const boletas = await Boleta.find({ alumnoMatricula: req.params.matricula }).sort({ fechaSubida: -1 });
@@ -801,6 +865,7 @@ router.get('/boletas/alumno/:matricula', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 router.delete('/boletas/:id', async (req, res) => {
     try {
         await Boleta.findByIdAndDelete(req.params.id);
