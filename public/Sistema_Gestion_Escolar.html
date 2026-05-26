@@ -550,15 +550,14 @@ const API_ADMIN = '/api/admin';
 async function cargarCarrerasEnSelect() {
     try {
         const res = await fetch(`${API_ADMIN}/carreras`);
-        if (res.ok) {
-            const carreras = await res.json();
-            const select = document.getElementById('reg-carrera');
-            if (select) {
-                select.innerHTML = '<option value="">Seleccionar carrera</option>';
-                carreras.forEach(c => {
-                    select.innerHTML += `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`;
-                });
-            }
+        if (!res.ok) throw new Error('Error al cargar carreras');
+        const carreras = await res.json();
+        const select = document.getElementById('reg-carrera');
+        if (select) {
+            select.innerHTML = '<option value="">Seleccionar carrera</option>';
+            carreras.forEach(carrera => {
+                select.innerHTML += `<option value="${carrera}">${carrera}</option>`;
+            });
         }
     } catch (err) {
         console.error('Error cargando carreras:', err);
