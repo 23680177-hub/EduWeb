@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Modelos
+const Carrera = require('../models/Carrera');
 const Alumno = require('../models/Alumno');
 const Docente = require('../models/Docente');
 const Grupo = require('../models/Grupo');
@@ -216,15 +217,8 @@ router.get('/alumnos/:id/carga', async (req, res) => {
 });
 // ========== CARRERAS (para selects) ==========
 router.get('/carreras', async (req, res) => {
-    try {
-        // Obtener carreras únicas de los alumnos
-        const carreras = await Alumno.distinct('carrera');
-        // Filtrar valores nulos o vacíos
-        const lista = carreras.filter(c => c && c.trim() !== '');
-        res.json(lista);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+    const carreras = await Carrera.find({ activo: true });
+    res.json(carreras.map(c => c.nombre));
 });
 // ========== GRUPOS ==========
 const storageHorario = multer.diskStorage({
