@@ -217,8 +217,12 @@ router.get('/alumnos/:id/carga', async (req, res) => {
 });
 // ========== CARRERAS (para selects) ==========
 router.get('/carrera', async (req, res) => {
-    const carrera = await Carrera.find({ activo: true });
-    res.json(carreras.map(c => c.nombre));
+    try {
+        const carreras = await Carrera.find({ activo: true });
+        res.json(carreras.map(c => c.nombre));
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 // ========== GRUPOS ==========
 const storageHorario = multer.diskStorage({
